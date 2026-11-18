@@ -47,3 +47,6 @@ example
 *.aab
 .env
 /jarful-build-assets_1.zip
+
+# Claude Code agents and local settings (kept local, not published)
+.claude/
