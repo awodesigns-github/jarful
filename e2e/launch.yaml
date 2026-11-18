@@ -1,14 +1,45 @@
 # Maestro launch flow for M0 (US-13): fresh install opens straight to home, no sign-up prompt.
-# Run locally against the Android emulator with the dev build installed:
-#   maestro test e2e/launch.yaml
+# Run locally against the Android emulator with the build installed:
+#   maestro test e2e/launch.yaml                                  # preview/release build, 3 s budget
+#   maestro test -e DEV_CLIENT=1 -e LAUNCH_TIMEOUT=60000 e2e/launch.yaml   # EAS dev build + `npm start`
+# A dev build opens Expo's launcher after clearState, so DEV_CLIENT connects it to Metro first.
+# The 3 s launch budget only means something on a preview build; dev builds bundle JS on launch.
 appId: app.jarful
 ---
 - launchApp:
     clearState: true
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == '1'}
+    commands:
+      # Wait for Expo's launcher, then open Metro via localhost (needs `adb reverse tcp:8081 tcp:8081`).
+      # A deep link sent before the launcher is ready is dropped; LAN discovery is unreliable on the emulator.
+      - extendedWaitUntil:
+          visible: "(?i)development servers"
+          timeout: 20000
+      - openLink: "exp+jarful://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+      # Wait for the bundle: the launcher's header is gone once the app takes over.
+      - extendedWaitUntil:
+          notVisible: "(?i)development servers"
+          timeout: ${LAUNCH_TIMEOUT || 3000}
+      - waitForAnimationToEnd
+      # The dev menu's first-run sheet sometimes covers the app and hides it from Maestro.
+      # Continue opens the full dev menu; back closes it.
+      - runFlow:
+          when:
+            visible: "Continue"
+          commands:
+            - tapOn: "Continue"
+            - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "Go home"
+          commands:
+            - back
 - extendedWaitUntil:
     visible:
       id: "screen-index"
-    timeout: 3000
+    timeout: ${LAUNCH_TIMEOUT || 3000}
 - assertVisible: "Jarful"
 - assertNotVisible: "Sign up"
 - assertNotVisible: "Create account"
