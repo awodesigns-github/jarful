@@ -15,7 +15,8 @@
     "android": {
       "package": "app.jarful",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/icon-foreground.png",
+        "monochromeImage": "./assets/icon-monochrome.png",
         "backgroundColor": "#fbf6ec"
       }
     },
