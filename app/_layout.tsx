@@ -8,6 +8,8 @@ import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold, DMSans_700Bold
 import { ShantellSans_800ExtraBold } from '@expo-google-fonts/shantell-sans';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DataProvider } from '@/lib/data';
+import { ConnectGate } from '@/components/ConnectGate';
 import { ThemeProvider, useTheme } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -48,7 +50,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <Shell />
+          <DataProvider>
+            <ConnectGate>
+              <Shell />
+            </ConnectGate>
+          </DataProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

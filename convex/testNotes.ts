@@ -2,8 +2,8 @@
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { isNoteTooLong, NOTE_MAX } from "../lib/data/noteText";
 
-export const MAX_NOTE_LENGTH = 140;
 export const DEFAULT_CAPACITY = 30;
 
 async function requireUserId(ctx: QueryCtx) {
@@ -19,8 +19,8 @@ export const saveTestNote = mutation({
     const userId = await requireUserId(ctx);
     const trimmed = text.trim();
     if (trimmed.length === 0) throw new Error("Note is empty");
-    if (trimmed.length > MAX_NOTE_LENGTH) {
-      throw new Error(`Note is longer than ${MAX_NOTE_LENGTH} characters`);
+    if (isNoteTooLong(trimmed)) {
+      throw new Error(`Note is longer than ${NOTE_MAX} characters`);
     }
     const now = Date.now();
     const jar = await ctx.db

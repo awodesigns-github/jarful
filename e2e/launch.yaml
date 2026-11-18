@@ -1,0 +1,20 @@
+# Maestro launch flow for M0 (US-13): fresh install opens straight to home, no sign-up prompt.
+# Run locally against the Android emulator with the dev build installed:
+#   maestro test e2e/launch.yaml
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "screen-index"
+    timeout: 3000
+- assertVisible: "Jarful"
+- assertNotVisible: "Sign up"
+- assertNotVisible: "Create account"
+- assertVisible:
+    id: "link-compose"
+- assertVisible:
+    id: "link-archive"
+- assertVisible:
+    id: "link-settings"

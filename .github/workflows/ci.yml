@@ -1,0 +1,21 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Jest (React Native Testing Library)
+        run: npm test -- --ci
+      - name: convex-test (Vitest)
+        run: npm run test:convex
+# Maestro is local-only for M0. See docs/qa/maestro.md.

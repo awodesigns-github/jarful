@@ -8,12 +8,38 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#fbf6ec",
-    "ios": { "bundleIdentifier": "app.jarful", "supportsTablet": false },
+    "ios": {
+      "bundleIdentifier": "app.jarful",
+      "supportsTablet": false
+    },
     "android": {
       "package": "app.jarful",
-      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#fbf6ec" }
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#fbf6ec"
+      }
     },
-    "plugins": ["expo-router", "expo-dev-client", "expo-font", "expo-secure-store", "expo-notifications", "expo-sensors"],
-    "experiments": { "typedRoutes": true }
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      "expo-font",
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-sensors"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "e6cf8c45-3e85-4aa7-9241-2fe7059ad080"
+      }
+    },
+    "owner": "awodesigns"
   }
 }
