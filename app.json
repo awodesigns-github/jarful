@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Jarful",
+    "slug": "jarful",
+    "scheme": "jarful",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#fbf6ec",
+    "ios": { "bundleIdentifier": "app.jarful", "supportsTablet": false },
+    "android": {
+      "package": "app.jarful",
+      "adaptiveIcon": { "foregroundImage": "./assets/icon.png", "backgroundColor": "#fbf6ec" }
+    },
+    "plugins": ["expo-router", "expo-dev-client", "expo-font", "expo-secure-store", "expo-notifications", "expo-sensors"],
+    "experiments": { "typedRoutes": true }
+  }
+}

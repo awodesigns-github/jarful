@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "artboard": "Jar",
+  "stateMachine": "Jar",
+  "viewModel": {
+    "name": "Default",
+    "viewModel": "JarVM",
+    "properties": [
+      {
+        "name": "fillLevel",
+        "path": "fillLevel",
+        "type": "number",
+        "value": 0,
+        "changed": false
+      },
+      {
+        "name": "face",
+        "path": "face",
+        "type": "enum",
+        "enumType": "JarFace",
+        "value": "waiting",
+        "index": 0,
+        "values": ["waiting", "happy", "sleepy"],
+        "changed": false
+      },
+      {
+        "name": "noteColour",
+        "path": "noteColour",
+        "type": "color",
+        "value": "FFF7C31B",
+        "changed": false
+      },
+      {
+        "name": "reducedMotion",
+        "path": "reducedMotion",
+        "type": "boolean",
+        "value": false,
+        "changed": false
+      },
+      {
+        "name": "glassColour",
+        "path": "glassColour",
+        "type": "color",
+        "value": "FFFFFFFF",
+        "changed": false
+      },
+      {
+        "name": "lineColour",
+        "path": "lineColour",
+        "type": "color",
+        "value": "FF2E2A26",
+        "changed": false
+      },
+      {
+        "name": "labelColour",
+        "path": "labelColour",
+        "type": "color",
+        "value": "FFFBF6EC",
+        "changed": false
+      },
+      {
+        "name": "dropNote",
+        "path": "dropNote",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "revealNote",
+        "path": "revealNote",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "tapJar",
+        "path": "tapJar",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "seal",
+        "path": "seal",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "celebrate",
+        "path": "celebrate",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "noteLanded",
+        "path": "noteLanded",
+        "type": "trigger",
+        "changed": false
+      },
+      {
+        "name": "noteRevealed",
+        "path": "noteRevealed",
+        "type": "trigger",
+        "changed": false
+      }
+    ]
+  },
+  "globals": [],
+  "nested": []
+}
