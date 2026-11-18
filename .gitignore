@@ -51,3 +51,8 @@ example
 # Claude Code agents and local settings (kept local, not published)
 .claude/
 CLAUDE.md
+
+# Planning docs and source files (kept local, not published)
+docs/
+*.zip
+Jarful*Product Requirements Document.*

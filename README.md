@@ -76,7 +76,6 @@ convex/       backend schema and functions
 lib/data/     typed hooks the UI uses to read and write data
 tests/        Jest and convex-test suites
 e2e/          Maestro flows
-docs/         plan, user stories, decisions and QA notes
 ```
 
 ## Contributing
