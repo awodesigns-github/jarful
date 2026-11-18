@@ -50,3 +50,4 @@ example
 
 # Claude Code agents and local settings (kept local, not published)
 .claude/
+CLAUDE.md
