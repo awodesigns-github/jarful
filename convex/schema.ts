@@ -29,6 +29,19 @@ export default defineSchema({
     .index("by_userId_isFavourite", ["userId", "isFavourite", "createdAt"])
     .index("by_userId_clientId", ["userId", "clientId"]),
 
+  // Short-lived, single-use proof that lets a signed-in user take over an
+  // anonymous user's data. Only the SHA-256 of the token is stored.
+  mergeTokens: defineTable({
+    sourceUserId: v.id("users"),
+    tokenHash: v.string(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+    usedByUserId: v.optional(v.id("users")),
+  })
+    .index("by_tokenHash", ["tokenHash"])
+    .index("by_sourceUserId", ["sourceUserId"])
+    .index("by_usedByUserId", ["usedByUserId"]),
+
   settings: defineTable({
     userId: v.id("users"),
     reminderTime: v.optional(v.string()), // "HH:mm" local time

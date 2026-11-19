@@ -5,8 +5,20 @@ export { countNoteChars, isNoteTooLong, NOTE_MAX, NOTE_RAW_MAX } from "./noteTex
 export { useArchive, useShelf, useJarNotes, groupByMonth } from "./archive";
 export type { ArchiveNote, MonthGroup } from "./archive";
 export { useCurrentJar, useLastSeal, useRevealNote, useSetFavourite } from "./notes";
-export { useAddNote, useDraft, usePendingNotes, useOutboxSync } from "./offline";
+export { useAddNote, useDraft, usePendingNotes, useHeldNotes, useOutboxSync } from "./offline";
 export type { MoodName, RevealResult, RevealedNote } from "./notes";
 export { useSettings, useUpdateSettings, resetSettingsCache } from "./settings";
 export { DEFAULT_SETTINGS } from "./settingsShape";
 export type { Settings, SettingsPatch, ThemeMode, ReducedMotionSetting } from "./settingsShape";
+export {
+  useAuthMethods,
+  useAccount,
+  useSignInWithGoogle,
+  useEmailSignIn,
+  useSignOut,
+  useDeleteAccount,
+  AuthFlowError,
+} from "./account";
+export type { Account, AuthErrorCode } from "./account";
+export { useMergeStatus } from "./session";
+export type { MergeStatus } from "./session";

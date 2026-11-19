@@ -86,3 +86,72 @@ describe('draft', () => {
     expect(m.size).toBe(0);
   });
 });
+
+describe('outbox user mismatch (NOTE-3)', () => {
+  it('sends notes of the current user and stamps unowned ones', async () => {
+    const o = createOutbox(memStore().store);
+    await o.enqueue({ ...note('a'), userId: 'u1' });
+    await o.enqueue(note('b')); // written before the user was known
+    o.setCurrentUser('u1');
+    const sent: string[] = [];
+    await o.flush(async (n) => void sent.push(n.clientId));
+    expect(sent).toEqual(['a', 'b']);
+  });
+
+  it('holds notes written by another user instead of sending them', async () => {
+    const { store } = memStore();
+    const o = createOutbox(store);
+    await o.enqueue({ ...note('a'), userId: 'old' });
+    await o.enqueue({ ...note('b'), userId: 'new' });
+    o.setCurrentUser('new');
+    expect(o.getPendingCount()).toBe(1);
+    expect(o.getHeldCount()).toBe(1);
+    const sent: string[] = [];
+    await o.flush(async (n) => void sent.push(n.clientId));
+    expect(sent).toEqual(['b']);
+    expect(o.getHeldCount()).toBe(1);
+    // still on the device after a restart
+    const o2 = createOutbox(store);
+    await o2.load();
+    o2.setCurrentUser('new');
+    expect(o2.getHeldCount()).toBe(1);
+  });
+
+  it('sends held notes when the original user is back', async () => {
+    const o = createOutbox(memStore().store);
+    await o.enqueue({ ...note('a'), userId: 'old' });
+    o.setCurrentUser('new');
+    o.setCurrentUser('old');
+    const sent: string[] = [];
+    await o.flush(async (n) => void sent.push(n.clientId));
+    expect(sent).toEqual(['a']);
+  });
+
+  it('adoptHeld moves held notes to the current user on request', async () => {
+    const o = createOutbox(memStore().store);
+    await o.enqueue({ ...note('a'), userId: 'old' });
+    o.setCurrentUser('new');
+    await o.adoptHeld();
+    expect(o.getHeldCount()).toBe(0);
+    expect(o.getPendingCount()).toBe(1);
+  });
+
+  it('reassign follows an anonymous user into the account after a merge', async () => {
+    const o = createOutbox(memStore().store);
+    await o.enqueue({ ...note('a'), userId: 'anon' });
+    o.setCurrentUser('acct');
+    expect(o.getHeldCount()).toBe(1);
+    await o.reassign('anon', 'acct');
+    expect(o.getHeldCount()).toBe(0);
+    expect(o.getPendingCount()).toBe(1);
+  });
+
+  it('clear removes every pending note', async () => {
+    const { m, store } = memStore();
+    const o = createOutbox(store);
+    await o.enqueue({ ...note('a'), userId: 'x' });
+    await o.clear();
+    expect(o.getPendingCount()).toBe(0);
+    expect([...m.keys()].filter((k) => k.includes('outbox'))).toEqual([]);
+  });
+});

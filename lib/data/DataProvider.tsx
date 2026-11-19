@@ -3,11 +3,13 @@ import type { ReactNode } from "react";
 import { convex, secureStorage } from "./client";
 import { useOutboxSync } from "./offline";
 import { useSettingsSync } from "./settings";
+import { useSessionAndMergeSync } from "./account";
 
 /** Wrap the app root once. Gives every screen Convex and auth. */
 function OutboxSync() {
   useOutboxSync();
   useSettingsSync();
+  useSessionAndMergeSync();
   return null;
 }
 

@@ -42,6 +42,8 @@ beforeEach(async () => {
   mockConn.connected = false;
   mockConn.listeners.clear();
   mockAuth.isAuthenticated = true;
+  // The session sync hook (DataProvider) reports who is signed in; the outbox waits for it.
+  outbox.setCurrentUser('u1');
   // reset the module-level outbox
   await outbox.load();
 });

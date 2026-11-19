@@ -4,6 +4,7 @@ import { useConvex, useConvexAuth, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { MoodName } from "./notes";
 import { optimisticAddNote } from "./notes";
+import { session, useSessionUserId } from "./session";
 import { createOutbox, draftStore, newClientId, type KeyValueStore } from "./outbox";
 
 const secureKv: KeyValueStore = {
@@ -12,8 +13,11 @@ const secureKv: KeyValueStore = {
   removeItem: SecureStore.deleteItemAsync,
 };
 
-export const outbox = createOutbox(secureKv);
+export const outbox = createOutbox(secureKv, { requireUser: true });
 const draft = draftStore(secureKv);
+
+/** Remove the saved compose draft (used after deleting the account). */
+export const clearSavedDraft = () => draft.clear().catch(() => {});
 
 const DEBOUNCE_MS = 400;
 
@@ -61,12 +65,27 @@ export function usePendingNotes(): { pendingCount: number } {
 }
 
 /**
+ * NOTE-3. Notes written under a different account than the one now signed in
+ * are never sent to it. They stay on the device: show "N notes waiting to
+ * sync". They send by themselves if the original account signs back in;
+ * `adoptHeldNotes()` lets the person add them to the current account instead.
+ */
+export function useHeldNotes(): { heldCount: number; adoptHeldNotes: () => Promise<void> } {
+  const heldCount = useSyncExternalStore(outbox.subscribe, outbox.getHeldCount, outbox.getHeldCount);
+  const adoptHeldNotes = useCallback(async () => {
+    await outbox.adoptHeld();
+  }, []);
+  return { heldCount, adoptHeldNotes };
+}
+
+/**
  * Mount once near the root (DataProvider does). Loads the outbox and sends it
  * on app start and whenever the connection is back and the user is signed in.
  */
 export function useOutboxSync() {
   const convex = useConvex();
   const { isAuthenticated } = useConvexAuth();
+  const sessionUser = useSessionUserId();
   const send = useMutation(api.notes.addNote).withOptimisticUpdate(optimisticAddNote);
   const sendRef = useRef(send);
   sendRef.current = send;
@@ -90,7 +109,7 @@ export function useOutboxSync() {
         }),
       )
       .catch(() => {});
-  }, [online, isAuthenticated]);
+  }, [online, isAuthenticated, sessionUser]);
 }
 
 /**
@@ -112,7 +131,7 @@ export function useAddNote() {
       const text = args.text.trim();
       if (text.length === 0) throw new Error("Note is empty");
       const clientId = newClientId();
-      await outbox.enqueue({ clientId, text, colour: args.colour, createdAt: Date.now() });
+      await outbox.enqueue({ clientId, text, colour: args.colour, createdAt: Date.now(), userId: session.owner() });
       if (convex.connectionState().isWebSocketConnected && ready.current.isAuthenticated) {
         void outbox
           .flush((n) =>
