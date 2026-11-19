@@ -34,7 +34,7 @@ function useOptionalNavigation() {
   }
 }
 
-type Props = { total: number; capacity?: number; width?: number };
+type Props = { total: number; capacity?: number; width?: number; colours?: (string | null)[] };
 
 /**
  * The home jar with the drop-in motion (docs/M1-motion-spec.md, section 1).
@@ -42,7 +42,7 @@ type Props = { total: number; capacity?: number; width?: number };
  * plays the fall, and lets the jar settle as the new slip appears. All movement is on
  * shared values; the only React state is `held`, changed while no navigation is running.
  */
-export function DropJar({ total, capacity = JAR_CAPACITY, width = 260 }: Props) {
+export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }: Props) {
   const navigation = useOptionalNavigation();
   const reduced = useReduced();
   const addNote = useAddNote();
@@ -159,7 +159,7 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260 }: Props) 
   return (
     <View style={{ width, height }}>
       <Animated.View style={[{ width, height, transformOrigin: 'bottom' }, jarStyle]}>
-        <Jar fill={fill} width={width} />
+        <Jar fill={fill} width={width} colours={colours} />
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, glowStyle]}>
           <Svg width={width} height={height} viewBox="0 8 260 320" fill="none">
             <G transform="translate(0 -5.382)">

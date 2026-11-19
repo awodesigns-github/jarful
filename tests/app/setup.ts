@@ -12,6 +12,8 @@ export const mockJar: { current: { jarId: string; capacity: number; noteCount: n
 export const mockPending = { current: 0 };
 export const mockOnline = { current: true };
 export const mockAdd = jest.fn();
+export const mockReveal = jest.fn();
+export const mockSetFav = jest.fn();
 export const mockDraft = { text: '', setText: jest.fn(), clear: jest.fn() };
 export const mockNotes: { current: { _id: string; text: string }[] | undefined } = { current: [] };
 jest.mock('@/lib/data', () => ({
@@ -21,6 +23,8 @@ jest.mock('@/lib/data', () => ({
   useSaveTestNote: () => require('./setup').mockSave,
   useCurrentJar: () => require('./setup').mockJar.current,
   usePendingNotes: () => ({ pendingCount: require('./setup').mockPending.current }),
+  useRevealNote: () => require('./setup').mockReveal,
+  useSetFavourite: () => require('./setup').mockSetFav,
   useAddNote: () => require('./setup').mockAdd,
   useDraft: () => require('./setup').mockDraft,
   countNoteChars: (t: string) => Array.from(t).length,
@@ -51,6 +55,7 @@ jest.mock('@/motion/primitives', () => {
     useSharedValue: (v: unknown) => React.useRef(sv(v)).current,
     useAnimatedStyle: (fn: () => object) => fn(),
     useReduced: () => false,
+    withDelay: (_d: number, a: unknown) => a,
     withTiming: anim,
     withSpring: anim,
     withSequence: (...a: unknown[]) => a[a.length - 1],
@@ -58,5 +63,8 @@ jest.mock('@/motion/primitives', () => {
 });
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn().mockResolvedValue(undefined),
+  selectionAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Light: 'light' },
 }));
+
+jest.mock('expo-sensors', () => ({ Accelerometer: { setUpdateInterval: jest.fn(), addListener: jest.fn(() => ({ remove: jest.fn() })) } }));

@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
-import { useTheme } from '@/theme';
-import { GLASS_PATH, HIGHLIGHT_PATH, SLIPS } from './slips';
+import { mood, useTheme } from '@/theme';
+import { GLASS_PATH, HIGHLIGHT_PATH, NEUTRAL_SLIP, SLIPS } from './slips';
 
 const LINE = '#2e2a26';
 const LID = '#c8755a';
@@ -20,14 +20,18 @@ export function jarFillLabel(fill: number): string {
   return 'Your jar, full';
 }
 
-type Props = { fill: number; width?: number; testID?: string };
+type Props = { fill: number; width?: number; testID?: string; colours?: (string | null)[] };
+
+function slipFill(c: string | null | undefined, fallback: string): string {
+  return c && c in mood ? mood[c as keyof typeof mood] : fallback;
+}
 
 /**
  * The jar, drawn from jarful-jar/jar-layers.svg. `fill` is a share of capacity (0 to 1+);
- * folded slips stack from the bottom. Slip colours are the artwork's mood colours, not the
- * user's own notes (the data hooks do not return note colours yet).
+ * folded slips stack from the bottom, oldest first. With `colours`, each slip takes its note's mood
+ * colour (neutral when the note has none); without it, the artwork's own colours.
  */
-export const Jar = memo(function Jar({ fill, width = 260, testID }: Props) {
+export const Jar = memo(function Jar({ fill, width = 260, testID, colours }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
   const shown = Math.max(0, Math.min(SLIPS.length, Math.round(Math.max(0, fill) * JAR_CAPACITY)));
@@ -66,7 +70,7 @@ export const Jar = memo(function Jar({ fill, width = 260, testID }: Props) {
                 height={30}
                 rx={7}
                 transform={`rotate(${s.rot} ${s.x} ${s.y})`}
-                fill={s.fill}
+                fill={colours ? slipFill(colours[i], NEUTRAL_SLIP) : s.fill}
                 stroke={LINE}
                 strokeWidth={2}
               />

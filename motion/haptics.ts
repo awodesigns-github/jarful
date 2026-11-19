@@ -11,3 +11,15 @@ export function landHaptic(): void {
   if (!enabled) return;
   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
 }
+
+/** A slip reaching the rim during a reveal. */
+export function revealHaptic(): void {
+  if (!enabled) return;
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
+
+/** Favourite toggled. */
+export function selectHaptic(): void {
+  if (!enabled) return;
+  Haptics.selectionAsync().catch(() => {});
+}
