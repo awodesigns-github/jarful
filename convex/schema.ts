@@ -26,7 +26,7 @@ export default defineSchema({
   })
     .index("by_userId_createdAt", ["userId", "createdAt"])
     .index("by_jarId_createdAt", ["jarId", "createdAt"])
-    .index("by_userId_isFavourite", ["userId", "isFavourite"])
+    .index("by_userId_isFavourite", ["userId", "isFavourite", "createdAt"])
     .index("by_userId_clientId", ["userId", "clientId"]),
 
   settings: defineTable({

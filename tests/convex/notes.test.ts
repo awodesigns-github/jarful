@@ -68,15 +68,6 @@ describe('addNote', () => {
     expect(ja?.noteCount).toBe(1);
     expect(jb?.noteCount).toBe(1);
   });
-
-  it('counts notes correctly, and does not block the 31st (sealing is M3)', async () => {
-    const t = makeT();
-    const { as } = await asUser(t, 'A');
-    for (let i = 0; i < 31; i++) await as.mutation(api.notes.addNote, { text: `n${i}` });
-    const jar = await as.query(api.notes.getCurrentJar, {});
-    expect(jar?.capacity).toBe(30);
-    expect(jar?.noteCount).toBe(31);
-  });
 });
 
 describe('addNote idempotency', () => {
@@ -85,7 +76,7 @@ describe('addNote idempotency', () => {
     const { as } = await asUser(t, 'A');
     const a = await as.mutation(api.notes.addNote, { text: 'once', clientId: 'c1' });
     const b = await as.mutation(api.notes.addNote, { text: 'once', clientId: 'c1' });
-    expect(b).toBe(a);
+    expect(b.noteId).toBe(a.noteId);
     expect((await as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
   });
 
@@ -95,7 +86,7 @@ describe('addNote idempotency', () => {
     const u2 = await asUser(t, 'B');
     const a = await u1.as.mutation(api.notes.addNote, { text: 'a', clientId: 'same' });
     const b = await u2.as.mutation(api.notes.addNote, { text: 'b', clientId: 'same' });
-    expect(a).not.toBe(b);
+    expect(a.noteId).not.toBe(b.noteId);
     expect((await u1.as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
     expect((await u2.as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
   });
@@ -202,5 +193,105 @@ describe('revealNote and setFavourite', () => {
     await as.mutation(api.notes.addNote, { text: 'one', colour: 'sky' });
     await as.mutation(api.notes.addNote, { text: 'two' });
     expect(await as.query(api.notes.getCurrentJar, {})).toMatchObject({ colours: ['sky', null] });
+  });
+});
+
+describe('seal at 30, archive and shelf', () => {
+  const add = (as: any, i: number, extra: object = {}) =>
+    as.mutation(api.notes.addNote, { text: `n${i}`, createdAt: 1000 + i, ...extra });
+
+  it('the 30th note seals the jar and the 31st starts a new one', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    for (let i = 0; i < 29; i++) expect((await add(as, i)).sealedJarId).toBeUndefined();
+    expect(await as.query(api.notes.getLastSeal, {})).toBeNull();
+    const r30 = await add(as, 29);
+    expect(r30.sealedJarId).toBeTruthy();
+    expect(await as.query(api.notes.getCurrentJar, {})).toBeNull();
+    expect(await as.query(api.notes.getLastSeal, {})).toMatchObject({ jarId: r30.sealedJarId });
+    await add(as, 30);
+    const cur = await as.query(api.notes.getCurrentJar, {});
+    expect(cur).toMatchObject({ capacity: 30, noteCount: 1 });
+    expect(cur?.jarId).not.toBe(r30.sealedJarId);
+    expect(await as.query(api.notes.getLastSeal, {})).toBeNull();
+    const shelf = await as.query(api.notes.listShelf, {});
+    expect(shelf).toHaveLength(1);
+    expect(shelf[0]).toMatchObject({ jarId: r30.sealedJarId, noteCount: 30 });
+    expect(shelf[0].colours).toHaveLength(30);
+  });
+
+  it('an idempotent retry around the seal boundary adds nothing', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    for (let i = 0; i < 29; i++) await add(as, i);
+    const first = await add(as, 29, { clientId: 'last' });
+    const retry = await add(as, 29, { clientId: 'last' });
+    expect(retry.noteId).toBe(first.noteId);
+    expect(retry.sealedJarId).toBeUndefined();
+    await add(as, 30, { clientId: 'next' });
+    const again = await add(as, 30, { clientId: 'next' });
+    const total = await t.run(async (ctx) => (await ctx.db.query('notes').collect()).length);
+    const jars = await t.run(async (ctx) => (await ctx.db.query('jars').collect()).length);
+    expect(total).toBe(31);
+    expect(jars).toBe(2);
+    expect(again.sealedJarId).toBeUndefined();
+    expect((await as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
+  });
+
+  it('archive is newest first across jars and paginates', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    for (let i = 0; i < 35; i++) await add(as, i);
+    const p1 = await as.query(api.notes.listArchive, { paginationOpts: { numItems: 20, cursor: null } });
+    expect(p1.page).toHaveLength(20);
+    expect(p1.page[0].text).toBe('n34');
+    expect(p1.isDone).toBe(false);
+    const p2 = await as.query(api.notes.listArchive, { paginationOpts: { numItems: 20, cursor: p1.continueCursor } });
+    expect(p2.page).toHaveLength(15);
+    expect(p2.page[14].text).toBe('n0');
+    const all = [...p1.page, ...p2.page].map((n) => n.createdAt);
+    expect(all).toEqual([...all].sort((a, b) => b - a));
+    expect(new Set([...p1.page, ...p2.page].map((n) => n.jarId)).size).toBe(2);
+  });
+
+  it('favourites filter returns only favourites, newest first', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    const ids = [];
+    for (let i = 0; i < 6; i++) ids.push((await add(as, i)).noteId);
+    for (const i of [1, 4]) await as.mutation(api.notes.setFavourite, { noteId: ids[i], isFavourite: true });
+    const r = await as.query(api.notes.listArchive, {
+      favouritesOnly: true,
+      paginationOpts: { numItems: 10, cursor: null },
+    });
+    expect(r.page.map((n) => n.text)).toEqual(['n4', 'n1']);
+  });
+
+  it('the shelf shows only sealed jars', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    for (let i = 0; i < 5; i++) await add(as, i);
+    expect(await as.query(api.notes.listShelf, {})).toEqual([]);
+  });
+
+  it('listJarNotes hides other users jars and missing jars alike; users are isolated', async () => {
+    const t = makeT();
+    const a = await asUser(t, 'A');
+    const b = await asUser(t, 'B');
+    const { noteId } = await add(a.as, 1);
+    await add(b.as, 2);
+    const jarId = (await a.as.query(api.notes.getCurrentJar, {}))!.jarId;
+    expect(await a.as.query(api.notes.listJarNotes, { jarId })).toHaveLength(1);
+    await expect(b.as.query(api.notes.listJarNotes, { jarId })).rejects.toThrow('Jar not found');
+    const gone = await t.run(async (ctx) => {
+      const id = await ctx.db.insert('jars', { userId: a.userId, capacity: 30, startedAt: 1 });
+      await ctx.db.delete(id);
+      return id;
+    });
+    await expect(b.as.query(api.notes.listJarNotes, { jarId: gone })).rejects.toThrow('Jar not found');
+    const arch = await b.as.query(api.notes.listArchive, { paginationOpts: { numItems: 10, cursor: null } });
+    expect(arch.page.map((n) => n.text)).toEqual(['n2']);
+    expect(arch.page.some((n) => n._id === noteId)).toBe(false);
+    await expect(t.query(api.notes.listShelf, {})).rejects.toThrow('Not signed in');
   });
 });

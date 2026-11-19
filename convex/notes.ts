@@ -1,6 +1,7 @@
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import { paginationOptsValidator } from "convex/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { isNoteTooLong, NOTE_MAX } from "../lib/data/noteText";
 
@@ -39,7 +40,7 @@ export const addNote = mutation({
     clientId: v.optional(v.string()),
     createdAt: v.optional(v.number()), // when it was written on the device
   },
-  returns: v.id("notes"),
+  returns: v.object({ noteId: v.id("notes"), sealedJarId: v.optional(v.id("jars")) }),
   handler: async (ctx, { text, colour, clientId, createdAt }) => {
     const userId = await requireUserId(ctx);
     if (clientId !== undefined) {
@@ -48,7 +49,7 @@ export const addNote = mutation({
         .query("notes")
         .withIndex("by_userId_clientId", (q) => q.eq("userId", userId).eq("clientId", clientId))
         .first();
-      if (existing) return existing._id; // a retry after a lost response
+      if (existing) return { noteId: existing._id }; // a retry after a lost response
     }
     const trimmed = text.trim();
     if (trimmed.length === 0) throw new Error("Note is empty");
@@ -57,17 +58,22 @@ export const addNote = mutation({
     }
     const now = Date.now();
     const writtenAt = createdAt === undefined ? now : Math.min(createdAt, now);
-    // TODO(M3): when this note brings the jar to capacity, set sealedAt and
-    // start a new jar. For now the 31st note is accepted into the same jar.
-    const jar = await currentJar(ctx, userId);
+    let jar = await currentJar(ctx, userId);
+    let count = 0;
+    if (jar) {
+      count = await countNotes(ctx, jar._id, jar.capacity);
+      if (count >= jar.capacity) {
+        // An over-full open jar (notes saved before sealing existed): seal it first.
+        await ctx.db.patch(jar._id, { sealedAt: now });
+        jar = null;
+        count = 0;
+      }
+    }
     const jarId =
       jar?._id ??
-      (await ctx.db.insert("jars", {
-        userId,
-        capacity: DEFAULT_CAPACITY,
-        startedAt: now,
-      }));
-    return await ctx.db.insert("notes", {
+      (await ctx.db.insert("jars", { userId, capacity: DEFAULT_CAPACITY, startedAt: now }));
+    const capacity = jar?.capacity ?? DEFAULT_CAPACITY;
+    const noteId = await ctx.db.insert("notes", {
       userId,
       jarId,
       text: trimmed,
@@ -76,6 +82,110 @@ export const addNote = mutation({
       isFavourite: false,
       clientId,
     });
+    if (count + 1 >= capacity) {
+      await ctx.db.patch(jarId, { sealedAt: now });
+      return { noteId, sealedJarId: jarId };
+    }
+    return { noteId };
+  },
+});
+
+async function countNotes(ctx: QueryCtx, jarId: Id<"jars">, capacity: number) {
+  const rows = await ctx.db
+    .query("notes")
+    .withIndex("by_jarId_createdAt", (q) => q.eq("jarId", jarId))
+    .take(capacity + 1);
+  return rows.length;
+}
+
+/**
+ * The seal signal. Non-null while the newest jar is sealed and no fresh jar has
+ * started (the state right after the 30th note). The UI plays the seal moment
+ * when `jarId` differs from the one it last showed.
+ */
+export const getLastSeal = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireUserId(ctx);
+    const jar = await ctx.db
+      .query("jars")
+      .withIndex("by_userId_startedAt", (q) => q.eq("userId", userId))
+      .order("desc")
+      .first();
+    if (!jar || jar.sealedAt === undefined) return null;
+    return { jarId: jar._id, sealedAt: jar.sealedAt };
+  },
+});
+
+const noteView = (n: Doc<"notes">) => ({
+  _id: n._id,
+  jarId: n.jarId,
+  text: n.text,
+  colour: n.colour ?? null,
+  createdAt: n.createdAt,
+  isFavourite: n.isFavourite,
+  clientId: n.clientId ?? null,
+});
+
+/** All the user's notes, any jar, newest first. Paginate with usePaginatedQuery. */
+export const listArchive = query({
+  args: { favouritesOnly: v.optional(v.boolean()), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { favouritesOnly, paginationOpts }) => {
+    const userId = await requireUserId(ctx);
+    const q = favouritesOnly
+      ? ctx.db
+          .query("notes")
+          .withIndex("by_userId_isFavourite", (i) => i.eq("userId", userId).eq("isFavourite", true))
+      : ctx.db.query("notes").withIndex("by_userId_createdAt", (i) => i.eq("userId", userId));
+    const page = await q.order("desc").paginate(paginationOpts);
+    return { ...page, page: page.page.map(noteView) };
+  },
+});
+
+/** Sealed jars, newest first, with their note colours (oldest first) for drawing. */
+export const listShelf = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireUserId(ctx);
+    const jars = await ctx.db
+      .query("jars")
+      .withIndex("by_userId_startedAt", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+    const sealed = jars.filter((j) => j.sealedAt !== undefined);
+    return await Promise.all(
+      sealed.map(async (j) => {
+        const notes = await ctx.db
+          .query("notes")
+          .withIndex("by_jarId_createdAt", (q) => q.eq("jarId", j._id))
+          .take(j.capacity + 1);
+        return {
+          jarId: j._id,
+          name: j.name ?? null,
+          startedAt: j.startedAt,
+          sealedAt: j.sealedAt as number,
+          capacity: j.capacity,
+          noteCount: notes.length,
+          colours: notes.map((n) => n.colour ?? null),
+        };
+      }),
+    );
+  },
+});
+
+/** One jar's notes, newest first. Owner only; another user's jar looks like a missing one. */
+export const listJarNotes = query({
+  args: { jarId: v.id("jars") },
+  handler: async (ctx, { jarId }) => {
+    const userId = await requireUserId(ctx);
+    const jar = await ctx.db.get(jarId);
+    if (jar === null || jar.userId !== userId) throw new Error("Jar not found");
+    const notes = await ctx.db
+      .query("notes")
+      .withIndex("by_jarId_createdAt", (q) => q.eq("jarId", jarId))
+      .order("desc")
+      .take(jar.capacity + 1);
+    return notes.map(noteView);
   },
 });
 
