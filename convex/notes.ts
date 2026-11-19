@@ -251,7 +251,7 @@ export const revealNote = mutation({
       await ctx.db.insert("settings", {
         userId,
         theme: "system",
-        reducedMotion: false,
+        reducedMotion: "system",
         haptics: true,
         lastRevealedNoteId: note._id,
       });

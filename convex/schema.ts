@@ -33,7 +33,8 @@ export default defineSchema({
     userId: v.id("users"),
     reminderTime: v.optional(v.string()), // "HH:mm" local time
     theme: v.union(v.literal("system"), v.literal("light"), v.literal("dark")),
-    reducedMotion: v.boolean(),
+    // "system" follows the OS. Legacy rows hold a boolean; readers normalise it.
+    reducedMotion: v.union(v.boolean(), v.literal("system"), v.literal("on"), v.literal("off")),
     haptics: v.boolean(),
     lastRevealedNoteId: v.optional(v.id("notes")),
   }).index("by_userId", ["userId"]),
