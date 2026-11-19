@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react-native';
 import { createDropCoordinator } from '@/motion/dropCoordinator';
-import { loadPlayedSeals, markSealPlayed, shouldPlaySeal, SEAL_KEY, type SealGate, type SealStore } from '@/motion/sealPlayed';
+import { loadPlayedSeals, localSealKey, markSealPlayed, shouldPlaySeal, SEAL_KEY, type SealGate, type SealStore } from '@/motion/sealPlayed';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Home from '@/app/index';
 import { ThemeProvider } from '@/theme';
@@ -75,7 +75,56 @@ describe('seal gate', () => {
   });
 });
 
+const open = (noteCount: number, pendingCount = 0) => ({ jarId: 'jarL', noteCount, pendingCount, capacity: 30 });
+
+describe('local seal trigger', () => {
+  it('fires at capacity before the server, and the later server seal does not replay it', async () => {
+    const store = mem();
+    expect(shouldPlaySeal(gate({ sealJarId: null, openJar: open(30) }))).toBe(localSealKey('jarL'));
+    const played = await markSealPlayed(new Set(), localSealKey('jarL'), store);
+    expect(shouldPlaySeal(gate({ sealJarId: null, played, openJar: open(30) }))).toBeNull();
+    expect(shouldPlaySeal(gate({ sealJarId: 'jarL', played, openJar: open(30) }))).toBeNull();
+  });
+  it('seals offline: 29 synced plus 1 pending reaches capacity', () => {
+    expect(shouldPlaySeal(gate({ sealJarId: null, openJar: open(29, 1) }))).toBe(localSealKey('jarL'));
+  });
+  it('does not trigger below capacity', () => {
+    expect(shouldPlaySeal(gate({ sealJarId: null, openJar: open(29) }))).toBeNull();
+  });
+  it('waits for the drop to land', () => {
+    expect(shouldPlaySeal(gate({ sealJarId: null, openJar: open(30), dropBusy: true }))).toBeNull();
+  });
+  it('does not replay after a restart', async () => {
+    const store = mem();
+    await markSealPlayed(new Set(), localSealKey('jarL'), store);
+    const reloaded = await loadPlayedSeals(store);
+    expect(shouldPlaySeal(gate({ sealJarId: null, played: reloaded, openJar: open(30) }))).toBeNull();
+    expect(shouldPlaySeal(gate({ sealJarId: 'jarL', played: reloaded, openJar: open(30) }))).toBeNull();
+  });
+});
+
 describe('Home seal', () => {
+  it('plays at once from the device when the jar reaches capacity, with no server seal', async () => {
+    mockJar.current = { jarId: 'jarL', capacity: 30, noteCount: 29 };
+    mockSeal.current = null;
+    const ui = () => (
+      <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 400, height: 800 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } }}>
+        <ThemeProvider>
+          <Home />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    );
+    const r = await render(ui());
+    await act(async () => {});
+    expect(r.queryByTestId('seal-line')).toBeNull();
+    mockJar.current = { jarId: 'jarL', capacity: 30, noteCount: 30 };
+    await r.rerender(ui());
+    await act(async () => {});
+    expect(r.getByTestId('seal-line')).toBeTruthy();
+    await r.unmount();
+    mockJar.current = null;
+  });
+
   it('plays the seal once, then shows the fresh jar and the calm line', async () => {
     mockJar.current = null;
     mockSeal.current = { jarId: 'jarX', sealedAt: 1 };

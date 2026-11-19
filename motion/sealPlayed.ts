@@ -39,6 +39,12 @@ export async function markSealPlayed(played: Set<string>, jarId: string, store: 
   return next;
 }
 
+/** Key for a seal started on the device before the server confirmed it. */
+export const localSealKey = (jarId: string) => `local:${jarId}`;
+
+/** The open jar, as the device sees it (server count plus notes still waiting to sync). */
+export type OpenJarView = { jarId: string; noteCount: number; pendingCount: number; capacity: number };
+
 export type SealGate = {
   /** `useLastSeal()` jarId, or null. */
   sealJarId: string | null;
@@ -50,12 +56,27 @@ export type SealGate = {
   sealing: boolean;
   /** The reveal overlay is open. */
   revealOpen: boolean;
+  /** Open jar, for the local trigger. Omit to wait for the server only. */
+  openJar?: OpenJarView | null;
 };
 
-/** The seal that is waiting to play, ignoring whether Home is ready for it. */
-export function pendingSealId(g: Pick<SealGate, 'sealJarId' | 'played'>): string | null {
-  if (!g.sealJarId || !g.played) return null;
-  return g.played.has(g.sealJarId) ? null : g.sealJarId;
+/** True once the seal for this jar has played, locally or from the server. */
+export function isSealPlayed(played: ReadonlySet<string>, jarId: string): boolean {
+  return played.has(jarId) || played.has(localSealKey(jarId));
+}
+
+/** The local trigger: the open jar has reached capacity and has not sealed here yet. */
+export function localSealId(played: ReadonlySet<string> | null, jar?: OpenJarView | null): string | null {
+  if (!played || !jar || jar.jarId === 'optimistic' || jar.capacity <= 0) return null;
+  if (jar.noteCount + jar.pendingCount < jar.capacity) return null;
+  return isSealPlayed(played, jar.jarId) ? null : localSealKey(jar.jarId);
+}
+
+/** The seal that is waiting to play, ignoring whether Home is ready for it. Server id wins; else the local one. */
+export function pendingSealId(g: Pick<SealGate, 'sealJarId' | 'played' | 'openJar'>): string | null {
+  if (!g.played) return null;
+  if (g.sealJarId && !isSealPlayed(g.played, g.sealJarId)) return g.sealJarId;
+  return localSealId(g.played, g.openJar);
 }
 
 /** Plays once per jar, only when Home is focused and idle, never while a drop is mid-flight. */

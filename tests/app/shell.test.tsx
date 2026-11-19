@@ -119,9 +119,9 @@ describe('home jar and compose (M2 phase 2a)', () => {
   });
 
   it('counts unsent notes towards the fill', async () => {
-    mockPending.current = 15;
+    mockPending.current = 14;
     const { getByTestId } = await render(<Home />, { wrapper: Wrapped });
-    expect(getByTestId('home-jar').props.accessibilityLabel).toBe('Your jar, full');
+    expect(getByTestId('home-jar').props.accessibilityLabel).toBe('Your jar, nearly full');
   });
 
   it('compose: drop folds, then only leaves; the add belongs to Home after the dismiss (BUG-3)', async () => {
