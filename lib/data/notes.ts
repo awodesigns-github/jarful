@@ -12,6 +12,17 @@ export function useCurrentJar() {
   return useQuery(api.notes.getCurrentJar);
 }
 
+/**
+ * The seal signal: `{ jarId, sealedAt }` while the newest jar is sealed and no
+ * fresh jar has started yet, else null (`undefined` while loading). Play the
+ * seal moment when `jarId` changes to a value you have not shown (treat the
+ * value present at first load as already shown). Reactive, so it also fires
+ * when an offline note syncs and brings the jar to 30.
+ */
+export function useLastSeal() {
+  return useQuery(api.notes.getLastSeal);
+}
+
 /** Optimistic update: the jar's noteCount goes up at once. */
 export function optimisticAddNote(store: OptimisticLocalStore, { text, colour }: { text: string; colour?: MoodName }) {
   const current = store.getQuery(api.notes.getCurrentJar, {});
