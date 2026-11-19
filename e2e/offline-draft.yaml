@@ -1,0 +1,40 @@
+# Draft survives a relaunch (no clearState on the second launch).
+#   maestro test -e DEV_CLIENT=1 -e LAUNCH_TIMEOUT=60000 e2e/offline-draft.yaml
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- runFlow: _dev-client.yaml
+- tapOn:
+    id: "home-compose"
+- extendedWaitUntil:
+    visible:
+      id: "compose-input"
+    timeout: 10000
+- tapOn:
+    id: "compose-input"
+- inputText: "Draft that must survive"
+# The draft saves 400 ms after the last key.
+- waitForAnimationToEnd:
+    timeout: 1500
+- stopApp
+- launchApp:
+    clearState: false
+# The dev client may reopen the last server by itself, or show its launcher.
+- extendedWaitUntil:
+    visible: "(?i)development servers|Draft that must survive|What made today a little better"
+    timeout: ${LAUNCH_TIMEOUT || 3000}
+    optional: true
+- runFlow:
+    when:
+      visible: "(?i)development servers"
+    file: _dev-client.yaml
+- extendedWaitUntil:
+    visible:
+      id: "screen-index"
+    timeout: ${LAUNCH_TIMEOUT || 3000}
+- tapOn:
+    id: "home-compose"
+- extendedWaitUntil:
+    visible: "Draft that must survive"
+    timeout: 10000
