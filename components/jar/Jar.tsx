@@ -9,6 +9,28 @@ const LID = '#c8755a';
 /** Capacity the slip layout is drawn for. Slips beyond it (a 31st note) fill the neck. */
 export const JAR_CAPACITY = 30;
 
+/** The lid, in the jar's own coordinates (viewBox 0 8 260 320). */
+function Lid() {
+  const { theme } = useTheme();
+  return (
+    <>
+      <Rect x={50} y={14} width={160} height={38} rx={10} fill={LID} stroke={theme.colors.jarLine} strokeWidth={4} />
+      {[80, 112, 144, 176].map((x) => (
+        <Path key={x} d={`M${x} 24V42`} stroke={theme.colors.jarLine} strokeOpacity={0.35} strokeWidth={2.5} strokeLinecap="round" />
+      ))}
+    </>
+  );
+}
+
+/** The lid alone, drawn over a jar of the same width, so it can be animated apart from the glass. */
+export function JarLid({ width = 260 }: { width?: number }) {
+  return (
+    <Svg width={width} height={(width * 320) / 260} viewBox="0 8 260 320" fill="none">
+      <Lid />
+    </Svg>
+  );
+}
+
 /** Plain-language fill, for TalkBack. Never a number. */
 export function jarFillLabel(fill: number): string {
   if (fill <= 0) return 'Your jar, empty and ready for its first note';
@@ -20,7 +42,7 @@ export function jarFillLabel(fill: number): string {
   return 'Your jar, full';
 }
 
-type Props = { fill: number; width?: number; testID?: string; colours?: (string | null)[] };
+type Props = { fill: number; width?: number; testID?: string; colours?: (string | null)[]; lid?: boolean };
 
 function slipFill(c: string | null | undefined, fallback: string): string {
   return c && c in mood ? mood[c as keyof typeof mood] : fallback;
@@ -31,7 +53,7 @@ function slipFill(c: string | null | undefined, fallback: string): string {
  * folded slips stack from the bottom, oldest first. With `colours`, each slip takes its note's mood
  * colour (neutral when the note has none); without it, the artwork's own colours.
  */
-export const Jar = memo(function Jar({ fill, width = 260, testID, colours }: Props) {
+export const Jar = memo(function Jar({ fill, width = 260, testID, colours, lid = true }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
   const shown = Math.max(0, Math.min(SLIPS.length, Math.round(Math.max(0, fill) * JAR_CAPACITY)));
@@ -84,10 +106,7 @@ export const Jar = memo(function Jar({ fill, width = 260, testID, colours }: Pro
         <Path d={HIGHLIGHT_PATH} stroke="#ffffff" strokeOpacity={0.75} strokeWidth={6} strokeLinecap="round" />
         <Rect x={62} y={57.3816} width={136} height={18} rx={4} fill={colors.jarGlass} stroke={colors.jarLine} strokeWidth={4} />
       </G>
-      <Rect x={50} y={14} width={160} height={38} rx={10} fill={LID} stroke={colors.jarLine} strokeWidth={4} />
-      {[80, 112, 144, 176].map((x) => (
-        <Path key={x} d={`M${x} 24V42`} stroke={colors.jarLine} strokeOpacity={0.35} strokeWidth={2.5} strokeLinecap="round" />
-      ))}
+      {lid && <Lid />}
     </Svg>
   );
 });

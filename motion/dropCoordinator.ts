@@ -14,9 +14,21 @@ export function createDropCoordinator(now: () => number = Date.now) {
   let phase: Phase = 'idle';
   let pending: DropNote | null = null;
   let since = 0;
+  const listeners = new Set<() => void>();
 
   return {
     phase: () => phase,
+    /** A drop is mid-flight. A stuck one stops counting as busy after STALE_MS. */
+    isBusy(): boolean {
+      return phase !== 'idle' && now() - since <= STALE_MS;
+    },
+    /** Called whenever a drop finishes landing, so Home can start what was waiting (the seal). */
+    subscribe(fn: () => void): () => void {
+      listeners.add(fn);
+      return () => {
+        listeners.delete(fn);
+      };
+    },
     pending: () => pending,
     /** Compose taps "Drop it in". False when a drop is already running, so no double-add. */
     request(note: DropNote): boolean {
@@ -61,7 +73,10 @@ export function createDropCoordinator(now: () => number = Date.now) {
       return true;
     },
     landed(): void {
-      if (phase === 'landing') phase = 'idle';
+      if (phase === 'landing') {
+        phase = 'idle';
+        listeners.forEach((fn) => fn());
+      }
     },
   };
 }
