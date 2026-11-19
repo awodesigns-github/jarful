@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as devSeed from "../devSeed.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
 import type * as testNotes from "../testNotes.js";
@@ -21,6 +22,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  devSeed: typeof devSeed;
   http: typeof http;
   notes: typeof notes;
   testNotes: typeof testNotes;
