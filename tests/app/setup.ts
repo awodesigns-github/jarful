@@ -21,12 +21,14 @@ export const mockShelf: { current: unknown[] | undefined } = { current: [] };
 export const mockJarNotes: { current: unknown[] | undefined } = { current: [] };
 export const mockNotes: { current: { _id: string; text: string }[] | undefined } = { current: [] };
 export const mockSettings = { current: { reminderTime: null as string | null, theme: 'system', reducedMotion: 'system', haptics: true } };
+export const mockAccount: { current: { kind: string; method: string | null } | null } = { current: null };
 export const mockUpdate = jest.fn().mockResolvedValue(undefined);
 beforeEach(() => {
   mockSettings.current = { reminderTime: null, theme: 'system', reducedMotion: 'system', haptics: true };
   mockUpdate.mockClear();
 });
 jest.mock('@/lib/data', () => ({
+  useAccount: () => require('./setup').mockAccount.current,
   useSettings: () => require('./setup').mockSettings.current,
   useUpdateSettings: () => require('./setup').mockUpdate,
   DataProvider: ({ children }: { children: unknown }) => children,
