@@ -23,15 +23,14 @@ export const seedPastNotes = internalMutation({
   handler: async (ctx, { userId, count }) => {
     const n = Math.min(count ?? 5, SAMPLES.length);
     const now = Date.now();
-    const open = await ctx.db
+    // Seed into the user's open (unsealed) jar; start one only if every jar is sealed.
+    const jars = await ctx.db
       .query("jars")
       .withIndex("by_userId_startedAt", (q) => q.eq("userId", userId))
       .order("desc")
-      .first();
-    const jarId =
-      open && open.sealedAt === undefined
-        ? open._id
-        : await ctx.db.insert("jars", { userId, capacity: DEFAULT_CAPACITY, startedAt: now - (n + 1) * 86_400_000 });
+      .take(50);
+    const open = jars.find((j) => j.sealedAt === undefined);
+    const jarId = open?._id ?? (await ctx.db.insert("jars", { userId, capacity: DEFAULT_CAPACITY, startedAt: now }));
     for (let i = 0; i < n; i++) {
       const { text, colour } = SAMPLES[i];
       await ctx.db.insert("notes", {
