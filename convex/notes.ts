@@ -32,16 +32,30 @@ async function currentJar(ctx: QueryCtx, userId: Awaited<ReturnType<typeof requi
 }
 
 export const addNote = mutation({
-  args: { text: v.string(), colour: v.optional(moodColour) },
+  args: {
+    text: v.string(),
+    colour: v.optional(moodColour),
+    clientId: v.optional(v.string()),
+    createdAt: v.optional(v.number()), // when it was written on the device
+  },
   returns: v.id("notes"),
-  handler: async (ctx, { text, colour }) => {
+  handler: async (ctx, { text, colour, clientId, createdAt }) => {
     const userId = await requireUserId(ctx);
+    if (clientId !== undefined) {
+      if (clientId.length === 0 || clientId.length > 64) throw new Error("Bad clientId");
+      const existing = await ctx.db
+        .query("notes")
+        .withIndex("by_userId_clientId", (q) => q.eq("userId", userId).eq("clientId", clientId))
+        .first();
+      if (existing) return existing._id; // a retry after a lost response
+    }
     const trimmed = text.trim();
     if (trimmed.length === 0) throw new Error("Note is empty");
     if (isNoteTooLong(trimmed)) {
       throw new Error(`Note is longer than ${NOTE_MAX} characters`);
     }
     const now = Date.now();
+    const writtenAt = createdAt === undefined ? now : Math.min(createdAt, now);
     // TODO(M3): when this note brings the jar to capacity, set sealedAt and
     // start a new jar. For now the 31st note is accepted into the same jar.
     const jar = await currentJar(ctx, userId);
@@ -57,8 +71,9 @@ export const addNote = mutation({
       jarId,
       text: trimmed,
       colour,
-      createdAt: now,
+      createdAt: writtenAt,
       isFavourite: false,
+      clientId,
     });
   },
 });

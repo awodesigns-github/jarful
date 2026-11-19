@@ -22,10 +22,12 @@ export default defineSchema({
     colour: v.optional(v.string()),
     createdAt: v.number(),
     isFavourite: v.boolean(),
+    clientId: v.optional(v.string()), // idempotency key from the device outbox
   })
     .index("by_userId_createdAt", ["userId", "createdAt"])
     .index("by_jarId_createdAt", ["jarId", "createdAt"])
-    .index("by_userId_isFavourite", ["userId", "isFavourite"]),
+    .index("by_userId_isFavourite", ["userId", "isFavourite"])
+    .index("by_userId_clientId", ["userId", "clientId"]),
 
   settings: defineTable({
     userId: v.id("users"),

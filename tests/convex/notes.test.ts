@@ -78,3 +78,37 @@ describe('addNote', () => {
     expect(jar?.noteCount).toBe(31);
   });
 });
+
+describe('addNote idempotency', () => {
+  it('returns the same note for the same clientId', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    const a = await as.mutation(api.notes.addNote, { text: 'once', clientId: 'c1' });
+    const b = await as.mutation(api.notes.addNote, { text: 'once', clientId: 'c1' });
+    expect(b).toBe(a);
+    expect((await as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
+  });
+
+  it('keeps users with the same clientId separate', async () => {
+    const t = makeT();
+    const u1 = await asUser(t, 'A');
+    const u2 = await asUser(t, 'B');
+    const a = await u1.as.mutation(api.notes.addNote, { text: 'a', clientId: 'same' });
+    const b = await u2.as.mutation(api.notes.addNote, { text: 'b', clientId: 'same' });
+    expect(a).not.toBe(b);
+    expect((await u1.as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
+    expect((await u2.as.query(api.notes.getCurrentJar, {}))?.noteCount).toBe(1);
+  });
+
+  it('keeps the device write time, never in the future', async () => {
+    const t = makeT();
+    const { as, userId } = await asUser(t, 'A');
+    await as.mutation(api.notes.addNote, { text: 'old', createdAt: 1000 });
+    await as.mutation(api.notes.addNote, { text: 'future', createdAt: Date.now() + 1e9 });
+    const notes = await t.run(async (ctx) =>
+      ctx.db.query('notes').withIndex('by_userId_createdAt', (q) => q.eq('userId', userId)).collect(),
+    );
+    expect(notes[0].createdAt).toBe(1000);
+    expect(notes[1].createdAt).toBeLessThanOrEqual(Date.now());
+  });
+});
