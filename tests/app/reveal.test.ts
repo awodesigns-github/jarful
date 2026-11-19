@@ -16,6 +16,10 @@ describe('shake detector', () => {
     const d = createShakeDetector();
     expect([d.push(at(3.5), 0), d.push(at(-3.5), 120), d.push(at(3.5), 240)]).toEqual([false, false, true]);
   });
+  it('fires on a normal hand shake (about 2.2 g peaks)', () => {
+    const d = createShakeDetector();
+    expect([d.push(at(2.2), 0), d.push(at(-2.2), 150), d.push(at(2.2), 300)]).toEqual([false, false, true]);
+  });
   it('does not fire when the jolts are too slow', () => {
     const d = createShakeDetector();
     expect([d.push(at(3.5), 0), d.push(at(3.5), 500), d.push(at(3.5), 1200)]).toEqual([false, false, false]);
