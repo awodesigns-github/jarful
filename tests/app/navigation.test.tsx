@@ -35,6 +35,9 @@ describe('navigation', () => {
       settings: Settings,
     });
     expect(screen.getByTestId('screen-index')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('home-compose'));
+    expect(screen.getByTestId('screen-compose')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('compose-close'));
     await fireEvent.press(screen.getByTestId('link-archive'));
     expect(screen.getByTestId('screen-archive')).toBeTruthy();
   });

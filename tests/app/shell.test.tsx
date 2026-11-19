@@ -25,8 +25,6 @@ function Wrapped({ children }: { children: React.ReactNode }) {
 
 describe('placeholder screens (US-13 shell)', () => {
   const cases: [string, React.ComponentType, string][] = [
-    ['index', Home, 'Home, your jar'],
-    ['compose', Compose, 'Add a note'],
     ['archive', Archive, 'Archive of notes'],
     ['settings', Settings, 'Settings'],
   ];
@@ -34,21 +32,17 @@ describe('placeholder screens (US-13 shell)', () => {
   it.each(cases)('%s renders with testID and accessibility label', async (id, Screen, label) => {
     const { getByTestId } = await render(<Screen />, { wrapper: Wrapped });
     const el = getByTestId(`screen-${id}`);
-    // Home holds the temporary test-note control, so it is not one grouped element.
-    expect(el.props.accessible).toBe(id !== 'index');
+    expect(el.props.accessible).toBe(true);
     expect(el.props.accessibilityLabel).toBe(label);
   });
 
-  it('home has a header and three links of at least 48 dp', async () => {
+  it('home has a header, a jar with a label, and an add button', async () => {
     const { getByTestId, getByRole } = await render(<Home />, { wrapper: Wrapped });
     expect(getByRole('header')).toHaveTextContent('Jarful');
-    for (const id of ['compose', 'archive', 'settings']) {
-      const link = getByTestId(`link-${id}`);
-      expect(link.props.accessibilityRole).toBe('link');
-      expect(link.props.accessibilityLabel).toBeTruthy();
-      const flat = Object.assign({}, ...[link.props.style].flat(2).filter(Boolean));
-      expect(flat.minHeight).toBeGreaterThanOrEqual(48);
-      expect(flat.minWidth).toBeGreaterThanOrEqual(48);
+    expect(getByTestId('home-jar').props.accessibilityLabel).toMatch(/Your jar/);
+    expect(getByTestId('home-compose').props.accessibilityLabel).toBe('Add a note');
+    for (const id of ['archive', 'settings']) {
+      expect(getByTestId(`link-${id}`).props.accessibilityRole).toBe('link');
     }
   });
 });
@@ -114,50 +108,47 @@ describe('theme light/dark (US-16)', () => {
   });
 });
 
-describe('M0 temporary test-note control (US-13 save path)', () => {
-  const { mockSave, mockNotes } = require('./setup');
+describe('home jar and compose (M2 phase 2a)', () => {
+  const { mockJar, mockPending, mockAdd, mockDraft } = require('./setup');
   beforeEach(() => {
-    mockSave.mockReset();
-    mockNotes.current = [];
+    mockJar.current = { jarId: 'j', capacity: 30, noteCount: 15 };
+    mockPending.current = 0;
+    mockAdd.mockReset();
+    mockDraft.text = '';
+    mockDraft.setText.mockReset();
+    mockDraft.clear.mockReset();
   });
 
-  it('shows a welcoming empty state and a disabled save button', async () => {
-    const { getByTestId, getByText } = await render(<Home />, { wrapper: Wrapped });
-    expect(getByText('No test notes yet.')).toBeTruthy();
-    expect(getByTestId('m0-save-note').props.accessibilityState.disabled).toBe(true);
+  it('labels the jar by fill without showing a count', async () => {
+    const { getByTestId, queryByText } = await render(<Home />, { wrapper: Wrapped });
+    expect(getByTestId('home-jar').props.accessibilityLabel).toBe('Your jar, about half full');
+    expect(queryByText(/15/)).toBeNull();
   });
 
-  it('saves the typed text and clears the field', async () => {
-    mockSave.mockResolvedValue('id1');
+  it('counts unsent notes towards the fill', async () => {
+    mockPending.current = 15;
     const { getByTestId } = await render(<Home />, { wrapper: Wrapped });
-    await fireEvent.changeText(getByTestId('m0-note-input'), 'Sunny walk');
-    await fireEvent.press(getByTestId('m0-save-note'));
-    expect(mockSave).toHaveBeenCalledWith({ text: 'Sunny walk' });
-    expect(getByTestId('m0-note-input').props.value).toBe('');
+    expect(getByTestId('home-jar').props.accessibilityLabel).toBe('Your jar, full');
   });
 
-  it('keeps the draft and shows a calm message when the save fails', async () => {
-    mockSave.mockRejectedValue(new Error('offline'));
-    const { getByTestId, findByTestId } = await render(<Home />, { wrapper: Wrapped });
-    await fireEvent.changeText(getByTestId('m0-note-input'), 'Kept words');
-    await fireEvent.press(getByTestId('m0-save-note'));
-    const msg = await findByTestId('m0-save-problem');
-    expect(msg).toBeTruthy();
-    expect(getByTestId('m0-note-input').props.value).toBe('Kept words');
+  it('compose: drop is disabled when empty, drops with the colour, clears the draft', async () => {
+    mockAdd.mockResolvedValue('c1');
+    mockDraft.text = 'Sunny walk';
+    const { getByTestId } = await render(<Compose />, { wrapper: Wrapped });
+    await fireEvent.press(getByTestId('mood-pink'));
+    expect(getByTestId('mood-pink').props.accessibilityState.selected).toBe(true);
+    await fireEvent.press(getByTestId('compose-drop'));
+    expect(mockAdd).toHaveBeenCalledWith({ text: 'Sunny walk', colour: 'pink' });
+    await Promise.resolve();
+    expect(mockDraft.clear).toHaveBeenCalled();
   });
 
-  it('caps the field at 140 characters', async () => {
-    const { getByTestId } = await render(<Home />, { wrapper: Wrapped });
-    expect(getByTestId('m0-note-input').props.maxLength).toBe(140);
-  });
-
-  it('lists notes with emoji and non-Latin text intact', async () => {
-    mockNotes.current = [
-      { _id: 'a', text: '今日はいい日 🌞' },
-      { _id: 'b', text: 'x'.repeat(140) },
-    ];
-    const { getByTestId } = await render(<Home />, { wrapper: Wrapped });
-    expect(getByTestId('m0-note-a')).toHaveTextContent('今日はいい日 🌞');
-    expect(getByTestId('m0-note-b').props.children).toHaveLength(140);
+  it('compose: empty draft disables drop, counter reads out', async () => {
+    const { getByTestId } = await render(<Compose />, { wrapper: Wrapped });
+    expect(getByTestId('compose-drop').props.accessibilityState.disabled).toBe(true);
+    expect(getByTestId('compose-counter').props.accessibilityLabel).toBe('0 of 140 characters');
+    for (const m of ['red', 'yellow', 'green', 'blue', 'pink', 'orange', 'sky']) {
+      expect(getByTestId(`mood-${m}`).props.accessibilityLabel).toMatch(/mood colour/);
+    }
   });
 });

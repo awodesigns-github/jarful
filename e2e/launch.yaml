@@ -44,7 +44,7 @@ appId: app.jarful
 - assertNotVisible: "Sign up"
 - assertNotVisible: "Create account"
 - assertVisible:
-    id: "link-compose"
+    id: "home-compose"
 - assertVisible:
     id: "link-archive"
 - assertVisible:
