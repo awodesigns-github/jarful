@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useNavigation } from 'expo-router';
 import {
   Animated,
@@ -22,6 +22,8 @@ import { HIGHLIGHT_PATH } from './slips';
 
 const LINE = '#2e2a26';
 const FALL = 86; // px from the top of the lane to just inside the lid
+/** Fallback if no transitionEnd arrives after focus; longer than a modal dismissal. */
+const HANDOFF_FALLBACK_MS = Platform.OS === 'ios' ? 400 : 700;
 const SLIP_W = 48;
 const SLIP_H = 30;
 
@@ -34,7 +36,12 @@ function useOptionalNavigation() {
   }
 }
 
-type Props = { total: number; capacity?: number; width?: number; colours?: (string | null)[] };
+type Props = {
+  total: number;
+  capacity?: number;
+  width?: number;
+  colours?: (string | null)[];
+};
 
 /**
  * The home jar with the drop-in motion (docs/M1-motion-spec.md, section 1).
@@ -127,15 +134,42 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
     play(first);
   }, [addNote, clear, reduced]);
 
-  // The compose modal's dismiss has finished when Home's transition ends.
+  // The compose modal's dismiss has finished when Home's transition ends (Android) or, where the
+  // sheet dismissal sends no transitionEnd to this screen (iOS, BUG-6), when Home regains focus.
+  // Focus alone fires as the dismissal begins, so it only arms a short fallback timer
+  // (BUG-3: nothing writes state while the modal is still closing). start() guards double runs.
   const startRef = useRef(start);
   startRef.current = start;
   useEffect(() => {
     if (!navigation) return;
-    const sub = navigation.addListener('transitionEnd' as never, ((e: { data?: { closing?: boolean } }) => {
-      if (!e.data?.closing) void startRef.current();
-    }) as never);
-    return sub;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const clearTimer = () => {
+      if (timer) clearTimeout(timer);
+      timer = undefined;
+    };
+    const run = () => {
+      clearTimer();
+      void startRef.current();
+    };
+    const onEnd = navigation.addListener(
+      'transitionEnd' as never,
+      ((e: { data?: { closing?: boolean } }) => {
+        if (!e.data?.closing) run();
+      }) as never,
+    );
+    const onFocus = navigation.addListener(
+      'focus' as never,
+      (() => {
+        if (dropCoordinator.phase() !== 'leaving') return;
+        clearTimer();
+        timer = setTimeout(run, HANDOFF_FALLBACK_MS);
+      }) as never,
+    );
+    return () => {
+      clearTimer();
+      onEnd();
+      onFocus();
+    };
   }, [navigation]);
 
   const jarStyle = useAnimatedStyle(() => ({
@@ -177,6 +211,20 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
 }
 
 const styles = StyleSheet.create({
-  lane: { position: 'absolute', left: 0, right: 0, overflow: 'hidden', alignItems: 'center' },
-  slip: { position: 'absolute', top: 0, width: SLIP_W, height: SLIP_H, borderRadius: 7, borderWidth: 2, borderColor: LINE },
+  lane: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  slip: {
+    position: 'absolute',
+    top: 0,
+    width: SLIP_W,
+    height: SLIP_H,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: LINE,
+  },
 });
