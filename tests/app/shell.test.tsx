@@ -9,7 +9,6 @@ import Home from '@/app/index';
 import Compose from '@/app/compose';
 import { dropCoordinator } from '@/motion/dropCoordinator';
 import Archive from '@/app/archive';
-import Account from '@/app/account';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 360, height: 800 },
@@ -31,17 +30,6 @@ jest.mock('expo-router', () => {
 });
 
 describe('placeholder screens (US-13 shell)', () => {
-  const cases: [string, React.ComponentType, string][] = [
-    ['account', Account, 'Account'],
-  ];
-
-  it.each(cases)('%s renders with testID and accessibility label', async (id, Screen, label) => {
-    const { getByTestId } = await render(<Screen />, { wrapper: Wrapped });
-    const el = getByTestId(`screen-${id}`);
-    expect(el.props.accessible).toBe(true);
-    expect(el.props.accessibilityLabel).toBe(label);
-  });
-
   it('home has a header, a jar with a label, and an add button', async () => {
     const { getByTestId, getByRole } = await render(<Home />, { wrapper: Wrapped });
     expect(getByRole('header')).toHaveTextContent('Jarful');

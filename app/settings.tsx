@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSettings, useUpdateSettings, type ReducedMotionSetting, type ThemeMode } from '@/lib/data';
+import { useAccount, useSettings, useUpdateSettings, type ReducedMotionSetting, type ThemeMode } from '@/lib/data';
 import { Icon } from '@/components/Icon';
 import { cancelReminder, enableReminder, hasPermission, formatTime, parseTime, rescheduleReminder } from '@/components/settings/reminder';
 import { MIN_TARGET, radius, space, useTheme } from '@/theme';
@@ -25,6 +25,8 @@ export default function Settings() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const settings = useSettings();
+  const account = useAccount();
+  const accountLabel = account?.kind === 'signedIn' ? 'Signed in' : 'Anonymous';
   const update = useUpdateSettings();
   const [denied, setDenied] = useState(false);
   const [picking, setPicking] = useState(false);
@@ -143,12 +145,12 @@ export default function Settings() {
         <Pressable
           testID="row-account"
           accessibilityRole="button"
-          accessibilityLabel="Account, anonymous"
+          accessibilityLabel={`Account, ${accountLabel.toLowerCase()}`}
           onPress={() => router.push('/account' as Href)}
           style={styles.rowLast}
         >
           <Text style={[label, styles.grow]}>Account</Text>
-          <Text style={[type.bodyM, { color: colors.textSecondary }]}>Anonymous</Text>
+          <Text style={[type.bodyM, { color: colors.textSecondary }]}>{accountLabel}</Text>
           <Icon name="chevronRight" size={20} color={colors.textSecondary} />
         </Pressable>
       </View>

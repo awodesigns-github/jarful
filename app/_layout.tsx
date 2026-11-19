@@ -29,6 +29,8 @@ function Shell() {
         <Stack.Screen name="compose" options={{ presentation: 'modal' }} />
         <Stack.Screen name="archive" />
         <Stack.Screen name="settings" />
+        <Stack.Screen name="sign-in-progress" options={{ gestureEnabled: false }} />
+        <Stack.Screen name="delete-done" options={{ gestureEnabled: false }} />
       </Stack>
       <SettingsEffects />
     </>
