@@ -23,3 +23,9 @@ export function selectHaptic(): void {
   if (!enabled) return;
   Haptics.selectionAsync().catch(() => {});
 }
+
+/** A very light tick as each crease of the letter fold closes. */
+export function creaseHaptic(): void {
+  if (!enabled) return;
+  Haptics.selectionAsync().catch(() => {});
+}
