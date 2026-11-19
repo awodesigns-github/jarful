@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from '@/theme';
 import { darkTheme, lightTheme } from '@/theme/tokens';
 import Home from '@/app/index';
 import Compose from '@/app/compose';
+import { dropCoordinator } from '@/motion/dropCoordinator';
 import Archive from '@/app/archive';
 import Settings from '@/app/settings';
 
@@ -137,17 +138,20 @@ describe('home jar and compose (M2 phase 2a)', () => {
     expect(getByTestId('home-jar').props.accessibilityLabel).toBe('Your jar, full');
   });
 
-  it('compose: drop is disabled when empty, drops with the colour, clears the draft', async () => {
+  it('compose: drop folds, then only leaves; the add belongs to Home after the dismiss (BUG-3)', async () => {
     mockAdd.mockResolvedValue('c1');
     mockDraft.text = 'Sunny walk';
     const { getByTestId } = await render(<Compose />, { wrapper: Wrapped });
     await fireEvent.press(getByTestId('mood-pink'));
     expect(getByTestId('mood-pink').props.accessibilityState.selected).toBe(true);
     await fireEvent.press(getByTestId('compose-drop'));
-    // BUG-3: the write waits for the modal to dismiss.
-    await waitFor(() => expect(mockAdd).toHaveBeenCalledWith({ text: 'Sunny walk', colour: 'pink' }));
-    expect(mockBack.mock.invocationCallOrder[0]).toBeLessThan(mockAdd.mock.invocationCallOrder[0]);
-    await waitFor(() => expect(mockDraft.clear).toHaveBeenCalled());
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect(mockAdd).not.toHaveBeenCalled();
+    expect(mockDraft.clear).not.toHaveBeenCalled();
+    expect(dropCoordinator.pending()).toEqual({ text: 'Sunny walk', colour: 'pink' });
+    await fireEvent.press(getByTestId('compose-drop')); // second tap does nothing
+    expect(mockBack).toHaveBeenCalledTimes(1);
+    dropCoordinator.cancel();
   });
 
   it('compose: empty draft disables drop, counter reads out', async () => {

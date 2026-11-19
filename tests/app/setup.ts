@@ -29,3 +29,34 @@ jest.mock('@/lib/data', () => ({
 }));
 jest.mock('@/components/useOnline', () => ({ useOnline: () => require('./setup').mockOnline.current }));
 
+
+// Reanimated and worklets need native runtimes; use their JS mocks. No animation runs in Jest.
+jest.mock('@/motion/primitives', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const sv = (v: unknown) => {
+    let cur = v;
+    return { get: () => cur, set: (n: unknown) => { cur = n; } };
+  };
+  // Finish at once, so completion callbacks (the fold, the fall) run in tests.
+  const anim = (to: unknown, _o?: unknown, cb?: (f: boolean) => void) => {
+    cb?.(true);
+    return to;
+  };
+  return {
+    __esModule: true,
+    scheduleOnRN: (fn: (...a: unknown[]) => void, ...args: unknown[]) => fn(...args),
+    Animated: { View: React.forwardRef((p: object, r: unknown) => React.createElement(View, { ...p, ref: r })) },
+    Easing: { bezier: () => (t: number) => t },
+    useSharedValue: (v: unknown) => React.useRef(sv(v)).current,
+    useAnimatedStyle: (fn: () => object) => fn(),
+    useReduced: () => false,
+    withTiming: anim,
+    withSpring: anim,
+    withSequence: (...a: unknown[]) => a[a.length - 1],
+  };
+});
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn().mockResolvedValue(undefined),
+  ImpactFeedbackStyle: { Light: 'light' },
+}));

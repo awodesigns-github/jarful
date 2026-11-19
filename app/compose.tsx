@@ -1,21 +1,20 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Animated, scheduleOnRN, useAnimatedStyle, useSharedValue, useReduced, withTiming } from '@/motion/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { countNoteChars, NOTE_MAX, NOTE_RAW_MAX, useAddNote, useDraft, type MoodName } from '@/lib/data';
 import { CharCounter } from '@/components/CharCounter';
 import { Icon } from '@/components/Icon';
 import { useOnline } from '@/components/useOnline';
 import { MIN_TARGET, mood, useTheme } from '@/theme';
+import { EO } from '@/motion/curves';
+import { dropCoordinator } from '@/motion/dropCoordinator';
 
 const MOODS = Object.keys(mood) as MoodName[];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
-
-// The modal dismiss takes about 300 ms; wait it out before touching state.
-const DISMISS_MS = 450;
-const afterDismiss = () => new Promise<void>((resolve) => setTimeout(resolve, DISMISS_MS));
 
 export default function Compose() {
   const { theme } = useTheme();
@@ -25,7 +24,8 @@ export default function Compose() {
   const addNote = useAddNote();
   const { text, setText, clear } = useDraft();
   const [colour, setColour] = useState<MoodName | undefined>();
-  const sending = useRef(false);
+  const reduced = useReduced();
+  const fold = useSharedValue(0); // 0 flat note, 1 folded (or faded when reduced)
   const { colors, type, space, radius } = theme;
 
   const count = countNoteChars(text);
@@ -35,21 +35,26 @@ export default function Compose() {
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
-  const drop = async () => {
-    if (!canDrop || sending.current) return;
-    sending.current = true;
-    try {
-      // Leave first and write once the modal has finished dismissing: state
-      // updates landing mid-dismiss crash Fabric (BUG-3). The draft stays
-      // until the add resolves locally, so nothing is lost if it fails.
-      leave();
-      await afterDismiss();
-      await addNote({ text, colour });
-      clear();
-    } catch {
-      sending.current = false; // the draft stays; try again
-    }
+  // Drop-in, part 1: the note folds (220 ms, EO), then we leave. Home's transition end
+  // triggers the add and the fall (BUG-3: no state writes while the modal dismisses).
+  const drop = () => {
+    if (!canDrop || !dropCoordinator.request({ text, colour })) return;
+    fold.set(
+      withTiming(1, { duration: reduced ? 180 : 220, easing: EO }, (finished) => {
+        'worklet';
+        if (finished) scheduleOnRN(finishFold);
+      }),
+    );
   };
+  const finishFold = () => {
+    if (dropCoordinator.leaving()) leave();
+  };
+
+  const foldStyle = useAnimatedStyle(() => {
+    const f = fold.get();
+    if (reduced) return { opacity: 1 - f };
+    return { transform: [{ scaleY: 1 - 0.6 * f }, { scaleX: 1 - 0.15 * f }, { rotate: `${-4 * f}deg` }] };
+  });
 
   const tint = colour ? mood[colour] : undefined;
 
@@ -75,8 +80,9 @@ export default function Compose() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingHorizontal: space.s24, paddingTop: space.s20, paddingBottom: insets.bottom + space.s24, gap: space.s20 }}
       >
-        <View
+        <Animated.View
           style={[
+            foldStyle,
             styles.card,
             { backgroundColor: colors.bgSurface, borderColor: tint ?? colors.borderSubtle, borderRadius: 24 },
           ]}
@@ -106,7 +112,7 @@ export default function Compose() {
             )}
             <CharCounter testID="compose-counter" count={count} />
           </View>
-        </View>
+        </Animated.View>
 
         <View style={{ gap: space.s12 }}>
           <Text style={[type.labelS, { color: colors.textSecondary, letterSpacing: 0.4 }]}>MOOD COLOUR · OPTIONAL</Text>

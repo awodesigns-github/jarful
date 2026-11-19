@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCurrentJar, usePendingNotes } from '@/lib/data';
 import { Icon } from '@/components/Icon';
-import { Jar, jarFillLabel } from '@/components/jar/Jar';
+import { jarFillLabel } from '@/components/jar/Jar';
+import { DropJar } from '@/components/jar/DropJar';
 import { useOnline } from '@/components/useOnline';
 import { MIN_TARGET, useTheme } from '@/theme';
 
@@ -48,7 +49,7 @@ export default function Home() {
           accessibilityRole="image"
           accessibilityLabel={jarFillLabel(fill)}
         >
-          <Jar fill={fill} width={260} />
+          <DropJar total={total} capacity={capacity} width={260} />
         </View>
         <Text style={[type.bodyM, styles.hint, { color: colors.textSecondary }]}>
           {isEmpty ? 'Your jar is ready for its first good thing' : 'Add something good whenever you are ready'}

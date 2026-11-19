@@ -1,0 +1,13 @@
+import * as Haptics from 'expo-haptics';
+
+// One place for haptics. The M3 Settings toggle will flip `enabled`.
+let enabled = true;
+export const setHapticsEnabled = (on: boolean) => {
+  enabled = on;
+};
+
+/** Light tap for a note landing in the jar. Never the only feedback. */
+export function landHaptic(): void {
+  if (!enabled) return;
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+}
