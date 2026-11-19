@@ -6,7 +6,7 @@ const mockSignIn = jest.fn(() => new Promise(() => {}));
 jest.mock('@convex-dev/auth/react', () => ({ useAuthActions: () => ({ signIn: (...a: unknown[]) => (mockSignIn as any)(...a) }) }));
 jest.mock('convex/react', () => ({ useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }) }));
 jest.mock('@/lib/data/client', () => ({ secureStorage: { getItem: async () => null } }));
-jest.mock('@/lib/data', () => jest.requireActual('@/lib/data/useEnsureAnonymousSignIn'));
+jest.mock('@/lib/data', () => ({ ...jest.requireActual('@/lib/data/useEnsureAnonymousSignIn'), useSettings: () => ({ theme: 'system' }) }));
 import { ConnectGate } from '@/components/ConnectGate';
 import { ThemeProvider } from '@/theme';
 

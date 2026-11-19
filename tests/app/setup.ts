@@ -20,7 +20,15 @@ export const mockSeal: { current: { jarId: string; sealedAt: number } | null | u
 export const mockShelf: { current: unknown[] | undefined } = { current: [] };
 export const mockJarNotes: { current: unknown[] | undefined } = { current: [] };
 export const mockNotes: { current: { _id: string; text: string }[] | undefined } = { current: [] };
+export const mockSettings = { current: { reminderTime: null as string | null, theme: 'system', reducedMotion: 'system', haptics: true } };
+export const mockUpdate = jest.fn().mockResolvedValue(undefined);
+beforeEach(() => {
+  mockSettings.current = { reminderTime: null, theme: 'system', reducedMotion: 'system', haptics: true };
+  mockUpdate.mockClear();
+});
 jest.mock('@/lib/data', () => ({
+  useSettings: () => require('./setup').mockSettings.current,
+  useUpdateSettings: () => require('./setup').mockUpdate,
   DataProvider: ({ children }: { children: unknown }) => children,
   useEnsureAnonymousSignIn: () => ({ isReady: true, error: null }),
   useTestNotes: () => require('./setup').mockNotes.current,
@@ -64,7 +72,7 @@ jest.mock('@/motion/primitives', () => {
     scheduleOnRN: (fn: (...a: unknown[]) => void, ...args: unknown[]) => fn(...args),
     Animated: { View: React.forwardRef((p: object, r: unknown) => React.createElement(View, { ...p, ref: r })) },
     Easing: { bezier: () => (t: number) => t },
-    ReduceMotion: { Never: 'never', System: 'system' },
+    ReduceMotion: { Never: "never", System: "system" },
     useSharedValue: (v: unknown) => React.useRef(sv(v)).current,
     useAnimatedStyle: (fn: () => object) => fn(),
     useReduced: () => false,
@@ -83,3 +91,17 @@ jest.mock('expo-haptics', () => ({
 }));
 
 jest.mock('expo-sensors', () => ({ Accelerometer: { setUpdateInterval: jest.fn(), addListener: jest.fn(() => ({ remove: jest.fn() })) } }));
+
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: { DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { DAILY: 'daily' },
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn().mockResolvedValue(undefined),
+  getPermissionsAsync: jest.fn().mockResolvedValue({ granted: false, status: 'denied' }),
+  requestPermissionsAsync: jest.fn().mockResolvedValue({ granted: true, status: 'granted' }),
+  cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  scheduleNotificationAsync: jest.fn().mockResolvedValue('id'),
+  getAllScheduledNotificationsAsync: jest.fn().mockResolvedValue([]),
+  getLastNotificationResponseAsync: jest.fn().mockResolvedValue(null),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+}));
