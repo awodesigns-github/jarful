@@ -32,7 +32,6 @@ jest.mock('expo-router', () => {
 
 describe('placeholder screens (US-13 shell)', () => {
   const cases: [string, React.ComponentType, string][] = [
-    ['archive', Archive, 'Archive of notes'],
     ['settings', Settings, 'Settings'],
   ];
 

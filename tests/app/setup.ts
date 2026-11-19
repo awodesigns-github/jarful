@@ -15,6 +15,9 @@ export const mockAdd = jest.fn();
 export const mockReveal = jest.fn();
 export const mockSetFav = jest.fn();
 export const mockDraft = { text: '', setText: jest.fn(), clear: jest.fn() };
+export const mockArchive: { favs: unknown; all: unknown; status: string; loadMore: jest.Mock } = { favs: [], all: [], status: 'Exhausted', loadMore: jest.fn() };
+export const mockShelf: { current: unknown[] | undefined } = { current: [] };
+export const mockJarNotes: { current: unknown[] | undefined } = { current: [] };
 export const mockNotes: { current: { _id: string; text: string }[] | undefined } = { current: [] };
 jest.mock('@/lib/data', () => ({
   DataProvider: ({ children }: { children: unknown }) => children,
@@ -25,6 +28,13 @@ jest.mock('@/lib/data', () => ({
   usePendingNotes: () => ({ pendingCount: require('./setup').mockPending.current }),
   useRevealNote: () => require('./setup').mockReveal,
   useSetFavourite: () => require('./setup').mockSetFav,
+  useArchive: ({ favouritesOnly }: { favouritesOnly?: boolean } = {}) => {
+    const m = require('./setup').mockArchive;
+    const notes = favouritesOnly ? m.favs : m.all;
+    return { notes, months: jest.requireActual('@/lib/data/archive').groupByMonth(notes), status: m.status, loadMore: m.loadMore };
+  },
+  useShelf: () => require('./setup').mockShelf.current,
+  useJarNotes: () => require('./setup').mockJarNotes.current,
   useAddNote: () => require('./setup').mockAdd,
   useDraft: () => require('./setup').mockDraft,
   countNoteChars: (t: string) => Array.from(t).length,
