@@ -1,0 +1,66 @@
+# US-11 (anonymous only): Settings, Account, Delete, confirm, done, then Home shows an empty jar.
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- runFlow: _dev-client.yaml
+- tapOn:
+    id: "home-compose"
+- tapOn:
+    id: "compose-input"
+- inputText: "Something I will delete"
+- tapOn:
+    id: "compose-drop"
+- extendedWaitUntil:
+    notVisible:
+      id: "compose-input"
+    timeout: 10000
+- waitForAnimationToEnd
+- openLink: jarful://settings
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings"
+    timeout: 10000
+- tapOn:
+    id: "row-account"
+- extendedWaitUntil:
+    visible:
+      id: "account-screen"
+    timeout: 10000
+- assertVisible: "Your notes are on this phone"
+- tapOn:
+    id: "account-delete"
+- extendedWaitUntil:
+    visible:
+      id: "delete-explainer-screen"
+    timeout: 10000
+- assertVisible: "Keep my notes"
+- tapOn:
+    id: "delete-continue"
+- extendedWaitUntil:
+    visible:
+      id: "delete-confirm-screen"
+    timeout: 10000
+- tapOn:
+    id: "delete-confirm"
+- extendedWaitUntil:
+    visible:
+      id: "delete-done"
+    timeout: 30000
+- tapOn:
+    id: "delete-done-continue"
+- extendedWaitUntil:
+    visible:
+      id: "screen-index"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "Your jar is ready for its first good thing"
+    timeout: 30000
+- assertNotVisible: "(?i)streak|missed|catch up"
+- tapOn:
+    id: "link-archive"
+- extendedWaitUntil:
+    visible:
+      id: "archive-list"
+    timeout: 10000
+- assertNotVisible: "Something I will delete"

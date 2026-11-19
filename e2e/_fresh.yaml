@@ -1,0 +1,9 @@
+# Pre-step for flows that need seeded notes: clean install state, a new anonymous user, Home showing.
+# Run through e2e/run-seeded.sh, which then seeds the newest user and runs the real flow.
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- runFlow: _dev-client.yaml
+- assertVisible:
+    id: "home-jar"
