@@ -7,3 +7,6 @@ export type { ArchiveNote, MonthGroup } from "./archive";
 export { useCurrentJar, useLastSeal, useRevealNote, useSetFavourite } from "./notes";
 export { useAddNote, useDraft, usePendingNotes, useOutboxSync } from "./offline";
 export type { MoodName, RevealResult, RevealedNote } from "./notes";
+export { useSettings, useUpdateSettings, resetSettingsCache } from "./settings";
+export { DEFAULT_SETTINGS } from "./settingsShape";
+export type { Settings, SettingsPatch, ThemeMode, ReducedMotionSetting } from "./settingsShape";

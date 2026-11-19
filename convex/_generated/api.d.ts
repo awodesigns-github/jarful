@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as devSeed from "../devSeed.js";
 import type * as http from "../http.js";
 import type * as notes from "../notes.js";
+import type * as settings from "../settings.js";
 import type * as testNotes from "../testNotes.js";
 
 import type {
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   devSeed: typeof devSeed;
   http: typeof http;
   notes: typeof notes;
+  settings: typeof settings;
   testNotes: typeof testNotes;
 }>;
 
