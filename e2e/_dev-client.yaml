@@ -1,0 +1,31 @@
+# Shared subflow: connect Expo's dev launcher to Metro, then wait for the app. Used by core-loop and offline-draft.
+# Needs `adb reverse tcp:8081 tcp:8081`. Run with -e DEV_CLIENT=1 -e LAUNCH_TIMEOUT=60000.
+appId: app.jarful
+---
+- runFlow:
+    when:
+      true: ${DEV_CLIENT == '1'}
+    commands:
+      - extendedWaitUntil:
+          visible: "(?i)development servers"
+          timeout: 20000
+      - openLink: "exp+jarful://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+      - extendedWaitUntil:
+          notVisible: "(?i)development servers"
+          timeout: ${LAUNCH_TIMEOUT || 3000}
+      - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "Continue"
+          commands:
+            - tapOn: "Continue"
+            - waitForAnimationToEnd
+      - runFlow:
+          when:
+            visible: "Go home"
+          commands:
+            - back
+- extendedWaitUntil:
+    visible:
+      id: "screen-index"
+    timeout: ${LAUNCH_TIMEOUT || 3000}

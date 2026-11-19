@@ -1,0 +1,50 @@
+# Core loop (US-01, US-02, US-03, US-06/07 none-yet): open compose, write, pick a mood, drop it in, tap the jar.
+#   maestro test -e DEV_CLIENT=1 -e LAUNCH_TIMEOUT=60000 e2e/core-loop.yaml
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- runFlow: _dev-client.yaml
+- assertVisible:
+    id: "home-jar"
+- tapOn:
+    id: "home-compose"
+- extendedWaitUntil:
+    visible:
+      id: "compose-input"
+    timeout: 10000
+- tapOn:
+    id: "compose-input"
+- inputText: "A quiet coffee with Sam"
+- tapOn:
+    id: "mood-pink"
+- tapOn:
+    id: "compose-drop"
+# Fold, leave, fall: wait for Home to be back and the compose screen to be gone.
+- extendedWaitUntil:
+    notVisible:
+      id: "compose-input"
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: "home-jar"
+    timeout: 10000
+- waitForAnimationToEnd
+- assertVisible:
+    id: "home-jar"
+- assertNotVisible: "(?i)streak|missed|catch up"
+# A fresh user has only today's note, so the reveal says none-yet.
+- tapOn:
+    id: "home-jar"
+- extendedWaitUntil:
+    visible:
+      id: "reveal-empty"
+    timeout: 10000
+- assertVisible: "Keep adding good things; they'll come back to you here"
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: "reveal-overlay"
+    timeout: 5000
+- assertVisible:
+    id: "home-jar"
