@@ -1,12 +1,13 @@
 // Pure shake detection, so it can be tested without a sensor.
 // The accelerometer reports g (about 1 at rest). A "jolt" is a sample whose pull departs from
 // resting by more than `threshold`. A shake is `jolts` of them inside `windowMs`; after one,
-// further shakes are ignored for `cooldownMs`. Walking peaks near 0.5 to 1 g, so it stays under.
+// further shakes are ignored for `cooldownMs`. A normal hand shake peaks around 1.5 to 2.5 g total
+// (0.5 to 1.5 g departure); walking stays near 0.3 to 0.6 g departure and rarely repeats 3 times in 1 s.
 export type Sample = { x: number; y: number; z: number };
 export type ShakeOptions = { threshold?: number; jolts?: number; windowMs?: number; cooldownMs?: number; minGapMs?: number };
 
 export function createShakeDetector(opts: ShakeOptions = {}) {
-  const { threshold = 1.6, jolts = 3, windowMs = 900, cooldownMs = 1500, minGapMs = 80 } = opts;
+  const { threshold = 0.9, jolts = 3, windowMs = 1000, cooldownMs = 1500, minGapMs = 60 } = opts;
   let times: number[] = [];
   let lastShake = -Infinity;
   return {
