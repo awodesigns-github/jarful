@@ -9,7 +9,7 @@ import Home from '@/app/index';
 import Compose from '@/app/compose';
 import { dropCoordinator } from '@/motion/dropCoordinator';
 import Archive from '@/app/archive';
-import Settings from '@/app/settings';
+import Account from '@/app/account';
 
 const metrics = {
   frame: { x: 0, y: 0, width: 360, height: 800 },
@@ -32,7 +32,7 @@ jest.mock('expo-router', () => {
 
 describe('placeholder screens (US-13 shell)', () => {
   const cases: [string, React.ComponentType, string][] = [
-    ['settings', Settings, 'Settings'],
+    ['account', Account, 'Account'],
   ];
 
   it.each(cases)('%s renders with testID and accessibility label', async (id, Screen, label) => {
@@ -54,14 +54,12 @@ describe('placeholder screens (US-13 shell)', () => {
 });
 
 function Probe() {
-  const { theme, scheme, mode, setMode } = useTheme();
+  const { theme, scheme, mode } = useTheme();
   return (
     <>
       <Text testID="scheme">{scheme}</Text>
       <Text testID="mode">{mode}</Text>
       <Text testID="bg">{theme.colors.bgBase}</Text>
-      <Text testID="set-dark" onPress={() => setMode('dark')}>d</Text>
-      <Text testID="set-system" onPress={() => setMode('system')}>s</Text>
     </>
   );
 }
@@ -98,8 +96,9 @@ describe('theme light/dark (US-16)', () => {
 
   it('an explicit mode overrides the phone setting', async () => {
     mockScheme('light');
+    require('./setup').mockSettings.current.theme = 'dark';
     const { getByTestId } = await render(<Probe />, { wrapper: ThemeProvider });
-    await fireEvent.press(getByTestId('set-dark'));
+    expect(getByTestId('mode')).toHaveTextContent('dark');
     expect(getByTestId('scheme')).toHaveTextContent('dark');
   });
 

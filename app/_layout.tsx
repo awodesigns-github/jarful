@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DataProvider } from '@/lib/data';
 import { ConnectGate } from '@/components/ConnectGate';
 import { ThemeProvider, useTheme } from '@/theme';
+import { SettingsEffects } from '@/components/settings/SettingsEffects';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -29,6 +30,7 @@ function Shell() {
         <Stack.Screen name="archive" />
         <Stack.Screen name="settings" />
       </Stack>
+      <SettingsEffects />
     </>
   );
 }
@@ -46,13 +48,13 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={() => SplashScreen.hideAsync().catch(() => {})}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <DataProvider>
+        <DataProvider>
+          <ThemeProvider>
             <ConnectGate>
               <Shell />
             </ConnectGate>
-          </DataProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </DataProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
