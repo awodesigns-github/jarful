@@ -2,6 +2,8 @@
 export const GLASS_PATH =
   'M66 73.3816C30 87.3816 20 123.382 20 173.382L22 277.382C24 311.382 46 327.382 82 327.382H178C214 327.382 236 311.382 238 277.382L240 173.382C240 123.382 230 87.3816 194 73.3816H66Z';
 export const HIGHLIGHT_PATH = 'M48.5 155.382C42.5 195.382 42.5 235.382 48.5 265.382';
+/** Slip colour for a note with no mood colour. */
+export const NEUTRAL_SLIP = '#e9dfcc';
 export type Slip = { x: number; y: number; rot: number; fill: string; fold: string };
 export const SLIPS: Slip[] = [
  {

@@ -5,12 +5,13 @@ import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-export { Animated, Easing, scheduleOnRN, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming };
+export { Animated, Easing, scheduleOnRN, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming };
 /** System reduced-motion setting (Reanimated reads the OS flag). */
 export const useReduced = (): boolean => useReducedMotion();
