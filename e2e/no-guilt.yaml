@@ -1,0 +1,24 @@
+# US-05: return after days away. Last note 5 days ago, gaps in the months (no July, no December).
+# Needs backdated notes with gaps; see docs/qa/maestro.md ("US-05 seed") for the import steps.
+appId: app.jarful
+---
+- runFlow: _resume.yaml
+- assertVisible:
+    id: "home-jar"
+- assertVisible: "Add something good whenever you are ready"
+- assertNotVisible: "(?i)streak|missed|catch.?up|days? (ago|in a row|since)|behind|overdue|haven't|don't break|welcome back"
+- tapOn:
+    id: "link-archive"
+- extendedWaitUntil:
+    visible:
+      id: "archive-list"
+    timeout: 10000
+- assertVisible: "November 2026"
+- assertVisible: "Gap note 5 days back"
+- assertNotVisible: "(?i)streak|missed|catch.?up|days? in a row|behind|overdue|haven't|gap|no notes"
+# Months with notes only: scroll to the oldest, never a July or empty-month marker.
+- scrollUntilVisible:
+    element: "Gap note 150 days back"
+    timeout: 30000
+- assertNotVisible: "(?i)July|December|0 notes|no notes this"
+- assertNotVisible: "(?i)streak|missed|catch.?up|overdue"

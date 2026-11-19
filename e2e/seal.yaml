@@ -1,0 +1,53 @@
+# US-09: the 30th note seals the jar, a fresh jar starts, the shelf shows one sealed jar.
+# Needs 29 seeded notes in the open jar: run `e2e/run-seeded.sh e2e/seal.yaml 29`.
+appId: app.jarful
+---
+- runFlow: _resume.yaml
+- tapOn:
+    id: "home-compose"
+- tapOn:
+    id: "compose-input"
+- inputText: "The thirtieth good thing"
+- tapOn:
+    id: "compose-drop"
+- extendedWaitUntil:
+    notVisible:
+      id: "compose-input"
+    timeout: 10000
+- extendedWaitUntil:
+    visible: "Jar full. It's on your shelf now"
+    timeout: 15000
+- waitForAnimationToEnd
+# Fresh jar: empty copy returns once the line has faded.
+- extendedWaitUntil:
+    visible: "Your jar is ready for its first good thing"
+    timeout: 15000
+- assertNotVisible: "(?i)streak|missed|catch up"
+- tapOn:
+    id: "link-archive"
+- extendedWaitUntil:
+    visible:
+      id: "archive-list"
+    timeout: 10000
+- tapOn:
+    id: "archive-shelf-link"
+- extendedWaitUntil:
+    visible:
+      id: "shelf-list"
+    timeout: 10000
+# One sealed jar on the shelf.
+- assertVisible:
+    id: "shelf-jar-.*"
+- assertNotVisible:
+    id: "shelf-empty"
+- tapOn:
+    id: "shelf-jar-.*"
+- extendedWaitUntil:
+    visible:
+      id: "jar-notes-list"
+    timeout: 10000
+# Oldest first, so the note just dropped is last: scroll to it.
+- scrollUntilVisible:
+    element: "The thirtieth good thing"
+    timeout: 20000
+- assertVisible: "The thirtieth good thing"

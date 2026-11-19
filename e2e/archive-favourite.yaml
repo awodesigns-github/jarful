@@ -1,0 +1,56 @@
+# US-27 (reveal), US-28, US-08: drop a note, reveal a seeded past one, favourite it, find it under Favourites.
+# Needs 7 seeded past notes: run `e2e/run-seeded.sh e2e/archive-favourite.yaml 7`.
+appId: app.jarful
+---
+- runFlow: _resume.yaml
+- tapOn:
+    id: "home-compose"
+- tapOn:
+    id: "compose-input"
+- inputText: "Sun on the balcony"
+- tapOn:
+    id: "compose-drop"
+- extendedWaitUntil:
+    notVisible:
+      id: "compose-input"
+    timeout: 10000
+- waitForAnimationToEnd
+- tapOn:
+    id: "home-jar"
+- extendedWaitUntil:
+    visible:
+      id: "reveal-text"
+    timeout: 10000
+- copyTextFrom:
+    id: "reveal-text"
+- tapOn:
+    id: "reveal-favourite"
+- assertVisible: "Remove from favourites"
+- back
+- extendedWaitUntil:
+    notVisible:
+      id: "reveal-overlay"
+    timeout: 5000
+- tapOn:
+    id: "link-archive"
+- extendedWaitUntil:
+    visible:
+      id: "archive-list"
+    timeout: 10000
+# All shows today's note and the seeded ones, grouped under a month heading.
+- assertVisible: "Sun on the balcony"
+- assertVisible:
+    id: "archive-filter-all"
+    selected: true
+- tapOn:
+    id: "archive-filter-favourites"
+- assertVisible:
+    id: "archive-filter-favourites"
+    selected: true
+- assertVisible: ${maestro.copiedText}
+# Only the hearted note is left: today's drop is not a favourite.
+- assertNotVisible: "Sun on the balcony"
+- assertNotVisible: "(?i)streak|missed|catch up"
+- tapOn:
+    id: "archive-filter-all"
+- assertVisible: "Sun on the balcony"

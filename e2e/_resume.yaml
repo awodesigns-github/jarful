@@ -1,0 +1,20 @@
+# Bring the app (state kept) back to Home. Re-opens the dev client only if its launcher is showing.
+appId: app.jarful
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "(?i)development servers"
+    commands:
+      - openLink: "exp+jarful://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"
+- extendedWaitUntil:
+    visible:
+      id: "screen-index"
+    timeout: 60000
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- assertVisible:
+    id: "home-jar"

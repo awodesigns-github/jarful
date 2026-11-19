@@ -1,0 +1,71 @@
+# US-30, US-31, US-32: theme Dark and back, reduced motion On and Off, haptics off. Asserts selected states.
+# Self-contained (clean install). Settings is opened by deep link: the dev client's Tools button covers Home's icon.
+appId: app.jarful
+---
+- launchApp:
+    clearState: true
+- runFlow: _dev-client.yaml
+- openLink: jarful://settings
+- extendedWaitUntil:
+    visible:
+      id: "screen-settings"
+    timeout: 10000
+# Defaults
+- assertVisible:
+    id: "theme-system"
+    selected: true
+- assertVisible:
+    id: "motion-system"
+    selected: true
+- assertVisible:
+    id: "toggle-haptics"
+    checked: true
+# Theme: Dark, then back to System
+- tapOn:
+    id: "theme-dark"
+- assertVisible:
+    id: "theme-dark"
+    selected: true
+- assertNotVisible:
+    id: "theme-system"
+    selected: true
+- tapOn:
+    id: "theme-system"
+- assertVisible:
+    id: "theme-system"
+    selected: true
+- assertNotVisible:
+    id: "theme-dark"
+    selected: true
+# Reduced motion: On, then Off
+- tapOn:
+    id: "motion-on"
+- assertVisible:
+    id: "motion-on"
+    selected: true
+- assertNotVisible:
+    id: "motion-system"
+    selected: true
+- tapOn:
+    id: "motion-off"
+- assertVisible:
+    id: "motion-off"
+    selected: true
+- assertNotVisible:
+    id: "motion-on"
+    selected: true
+# Haptics off
+- tapOn:
+    id: "toggle-haptics"
+- assertVisible:
+    id: "toggle-haptics"
+    checked: false
+- assertNotVisible: "(?i)streak|missed|catch up"
+# Leave settings as found for the next run
+- tapOn:
+    id: "motion-system"
+- tapOn:
+    id: "toggle-haptics"
+- assertVisible:
+    id: "toggle-haptics"
+    checked: true
