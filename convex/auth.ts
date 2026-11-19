@@ -60,18 +60,29 @@ const providers = [
   ...(methods.email ? [ResendCode] : []),
 ];
 
+/**
+ * Where OAuth may send the user back to: the app's own jarful:// scheme, or the site.
+ * exp:// (Expo Go) is accepted only where AUTH_ALLOW_EXPO_GO is "true", i.e. the dev deployment.
+ */
+export function resolveRedirect(redirectTo: string, opts: { site?: string; allowExpoGo: boolean }) {
+  if (redirectTo.startsWith("jarful://")) return redirectTo;
+  if (opts.allowExpoGo && redirectTo.startsWith("exp://")) return redirectTo;
+  const { site } = opts;
+  if (site && (redirectTo === site || redirectTo.startsWith(site + "/"))) return redirectTo;
+  if (redirectTo.startsWith("/") || redirectTo.startsWith("?")) return `${site ?? ""}${redirectTo}`;
+  throw new Error("Invalid redirectTo");
+}
+
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers,
   callbacks: {
-    // OAuth returns to the app through its custom scheme (jarful://, or exp:// in Expo Go).
-    // The one-time code is bound to the verifier held on the device, so a different
-    // redirect target cannot use it.
+    // OAuth returns to the app through its custom scheme. The one-time code is bound to the
+    // verifier held on the device, so a different redirect target cannot use it.
     async redirect({ redirectTo }) {
-      if (redirectTo.startsWith("jarful://") || redirectTo.startsWith("exp://")) return redirectTo;
-      const site = process.env.SITE_URL;
-      if (site && (redirectTo === site || redirectTo.startsWith(site + "/"))) return redirectTo;
-      if (redirectTo.startsWith("/") || redirectTo.startsWith("?")) return `${site ?? ""}${redirectTo}`;
-      throw new Error("Invalid redirectTo");
+      return resolveRedirect(redirectTo, {
+        site: process.env.SITE_URL,
+        allowExpoGo: process.env.AUTH_ALLOW_EXPO_GO === "true",
+      });
     },
   },
 });
