@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCurrentJar, useLastSeal, usePendingNotes, useRevealNote, useShelf, type RevealResult } from '@/lib/data';
 import { Animated, ReduceMotion, useAnimatedStyle, useReduced, useSharedValue, withDelay, withSequence, withTiming } from '@/motion/primitives';
 import { dropCoordinator } from '@/motion/dropCoordinator';
-import { loadPlayedSeals, markSealPlayed, pendingSealId, shouldPlaySeal } from '@/motion/sealPlayed';
+import { loadPlayedSeals, localSealKey, markSealPlayed, pendingSealId, shouldPlaySeal } from '@/motion/sealPlayed';
 import { EIO, EO } from '@/motion/curves';
 import { useShake } from '@/motion/useShake';
 import { RevealOverlay } from '@/components/reveal/RevealOverlay';
@@ -101,10 +101,15 @@ export default function Home() {
   const [skipSeq, setSkipSeq] = useState(0);
   const [tick, setTick] = useState(0);
   const sealJarId = lastSeal?.jarId ?? null;
-  const waitingSeal = pendingSealId({ sealJarId, played });
-  const sealedColours = sealJarId ? shelf?.find((j) => j.jarId === sealJarId)?.colours : undefined;
+  const openJar = jar ? { jarId: String(jar.jarId), noteCount: jar.noteCount, pendingCount, capacity } : null;
+  const waitingSeal = pendingSealId({ sealJarId, played, openJar });
+  const sealedColours = sealJarId ? shelf?.find((j) => j.jarId === sealJarId)?.colours : jar?.colours;
+  // Sealed on the device but the server has not swapped the jar yet: show the fresh jar, pending overflow counted.
+  const [gaveUp, setGaveUp] = useState<ReadonlySet<string>>(new Set());
+  const localSealed = !!openJar && !!played && played.has(localSealKey(openJar.jarId)) && !gaveUp.has(openJar.jarId);
+  const rawTotal = (jar?.noteCount ?? 0) + pendingCount;
   // Until the seal has played the jar stays full, so the 30th note lands in a full jar.
-  const total = waitingSeal || sealing ? capacity : (jar?.noteCount ?? 0) + pendingCount;
+  const total = waitingSeal || sealing ? capacity : localSealed ? Math.max(0, rawTotal - capacity) : rawTotal;
   const fill = capacity > 0 ? Math.min(1, total / capacity) : 0;
   // Empty only when we know it: the jar answered (or there is nothing pending) and it holds nothing.
   // While the jar is unknown (loading or offline) with nothing pending, show neutral copy.
@@ -133,7 +138,7 @@ export default function Home() {
   useEffect(() => dropCoordinator.subscribe(() => setTick((t) => t + 1)), []);
   useEffect(() => {
     const dropBusy = dropCoordinator.isBusy();
-    const id = shouldPlaySeal({ sealJarId, played, dropBusy, focused, sealing: sealing !== null, revealOpen: open });
+    const id = shouldPlaySeal({ sealJarId, played, openJar, dropBusy, focused, sealing: sealing !== null, revealOpen: open });
     if (id) {
       // Mark before playing, so a restart mid-seal never replays it.
       setPlayed((prev) => new Set(prev ?? []).add(id));
@@ -147,7 +152,24 @@ export default function Home() {
       const t = setTimeout(() => setTick((n) => n + 1), 1000);
       return () => clearTimeout(t);
     }
-  }, [sealJarId, played, focused, sealing, open, tick]);
+  }, [sealJarId, played, focused, sealing, open, tick, openJar?.jarId, openJar?.noteCount, openJar?.pendingCount]);
+  // The server's seal arrived for a jar already sealed here: record it as played, never replay.
+  useEffect(() => {
+    if (played && sealJarId && !played.has(sealJarId) && played.has(localSealKey(sealJarId))) {
+      setPlayed((prev) => new Set(prev ?? []).add(sealJarId));
+      void markSealPlayed(played, sealJarId);
+    }
+  }, [sealJarId, played]);
+  // No server seal within 30 s of being online: trust the server's state, don't loop.
+  const staleJarId = localSealed && online && openJar && sealJarId !== openJar.jarId ? openJar.jarId : null;
+  useEffect(() => {
+    if (!staleJarId) return;
+    const t = setTimeout(() => {
+      if (__DEV__) console.warn(`[seal] local seal for jar ${staleJarId} was not confirmed by the server; using server state`);
+      setGaveUp((prev) => new Set(prev).add(staleJarId));
+    }, 30000);
+    return () => clearTimeout(t);
+  }, [staleJarId]);
   // Leaving Home mid-seal (compose) finishes it cleanly.
   useEffect(() => {
     if (!focused && sealing) setSkipSeq((n) => n + 1);
