@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { useConvex, useMutation, useQuery } from "convex/react";
+import { useConvex, useConvexAuth, useMutation, useQuery } from "convex/react";
 import type { OptimisticLocalStore } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -9,7 +9,8 @@ export type MoodName = "red" | "yellow" | "green" | "blue" | "pink" | "orange" |
 
 /** `undefined` while loading; `null` before the first note (treat as empty jar of capacity 30). */
 export function useCurrentJar() {
-  return useQuery(api.notes.getCurrentJar);
+  const { isAuthenticated } = useConvexAuth();
+  return useQuery(api.notes.getCurrentJar, isAuthenticated ? {} : "skip");
 }
 
 /**
@@ -20,7 +21,8 @@ export function useCurrentJar() {
  * when an offline note syncs and brings the jar to 30.
  */
 export function useLastSeal() {
-  return useQuery(api.notes.getLastSeal);
+  const { isAuthenticated } = useConvexAuth();
+  return useQuery(api.notes.getLastSeal, isAuthenticated ? {} : "skip");
 }
 
 /** Optimistic update: the jar's noteCount goes up at once. */
@@ -56,11 +58,14 @@ function localDayStart(now = new Date()) {
 /** `reveal()` picks a random past note (not today's, not the last shown). Needs the network. */
 export function useRevealNote(): () => Promise<RevealResult> {
   const convex = useConvex();
+  const { isAuthenticated } = useConvexAuth();
+  const authed = useRef(isAuthenticated);
+  authed.current = isAuthenticated;
   const reveal = useMutation(api.notes.revealNote);
   const ref = useRef(reveal);
   ref.current = reveal;
   return useCallback(async () => {
-    if (!convex.connectionState().isWebSocketConnected) return { status: "offline" };
+    if (!authed.current || !convex.connectionState().isWebSocketConnected) return { status: "offline" };
     try {
       const r = await ref.current({ dayStart: localDayStart() });
       return "reason" in r ? { status: "none-yet" } : { status: "ok", note: r };

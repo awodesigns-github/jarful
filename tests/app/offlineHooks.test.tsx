@@ -132,3 +132,19 @@ describe('outbox flush when the connection returns (US-13 offline, M2 airplane c
     await expect(result.current({ text: '   ' })).rejects.toThrow();
   });
 });
+
+describe('notes queued before sign-in (BUG-8)', () => {
+  it('stay on the device while signed out and flush once signed in', async () => {
+    mockConn.connected = true;
+    mockAuth.isAuthenticated = false;
+    const { result, rerender } = await renderHook(() => {
+      useOutboxSync();
+      return useAddNote();
+    });
+    await act(async () => void (await result.current({ text: 'Before sign-in' })));
+    expect(mockSend).not.toHaveBeenCalled();
+    mockAuth.isAuthenticated = true;
+    await rerender({});
+    await waitFor(() => expect(mockSent.map((m) => m.text)).toEqual(['Before sign-in']));
+  });
+});

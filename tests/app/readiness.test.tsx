@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 jest.mock('@convex-dev/auth/react', () => ({ useAuthActions: () => ({ signIn: jest.fn() }) }));
-jest.mock('convex/react', () => ({ useConvexAuth: () => ({ isLoading: true, isAuthenticated: false }) }));
+jest.mock('convex/react', () => ({ useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }) }));
 jest.mock('@/lib/data/client', () => ({ secureStorage: { getItem: async () => null } }));
 import { computeReadiness } from '@/lib/data/useEnsureAnonymousSignIn';
 import { ThemeProvider } from '@/theme';
@@ -11,18 +11,18 @@ import { mockJar, mockPending } from './setup';
 
 const base = { hasStoredSession: false, isAuthenticated: false, error: null, timedOut: false };
 
-describe('computeReadiness (BUG-4)', () => {
-  it('stored session + offline (not authenticated) is ready', () => {
+describe('computeReadiness (BUG-8: local-first, never blocks Home)', () => {
+  it('no session: background sign-in, not blocked, even while the keystore is read', () => {
+    expect(computeReadiness(base)).toBe('background');
+    expect(computeReadiness({ ...base, hasStoredSession: null })).toBe('background');
+    expect(computeReadiness({ ...base, timedOut: true })).toBe('background');
+  });
+  it('a stored session is ready without waiting for auth', () => {
     expect(computeReadiness({ ...base, hasStoredSession: true })).toBe('ready');
+    expect(computeReadiness({ ...base, hasStoredSession: null, isAuthenticated: true })).toBe('ready');
   });
-  it('no session + offline: checking, then the gate with retry after the timeout', () => {
-    expect(computeReadiness(base)).toBe('checking');
-    expect(computeReadiness({ ...base, timedOut: true })).toBe('blocked');
-    expect(computeReadiness({ ...base, error: new Error('x') })).toBe('blocked');
-  });
-  it('waits while the keystore is read, and is ready once authenticated', () => {
-    expect(computeReadiness({ ...base, hasStoredSession: null })).toBe('checking');
-    expect(computeReadiness({ ...base, isAuthenticated: true })).toBe('ready');
+  it('only an exhausted retry with no session is unrecoverable (a quiet hint)', () => {
+    expect(computeReadiness({ ...base, error: new Error('x') })).toBe('unrecoverable');
   });
 });
 

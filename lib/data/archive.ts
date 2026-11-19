@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { usePaginatedQuery, useQuery } from "convex/react";
+import { usePaginatedQuery, useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { outbox } from "./offline";
@@ -38,9 +38,10 @@ const PAGE = 30;
  * LoadingFirstPage | CanLoadMore | LoadingMore | Exhausted.
  */
 export function useArchive({ favouritesOnly = false }: { favouritesOnly?: boolean } = {}) {
+  const { isAuthenticated } = useConvexAuth();
   const { results, status, loadMore } = usePaginatedQuery(
     api.notes.listArchive,
-    { favouritesOnly },
+    isAuthenticated ? { favouritesOnly } : "skip",
     { initialNumItems: PAGE },
   );
   const [pendingRaw, setPendingRaw] = useState(() => outbox.pending());
@@ -75,10 +76,12 @@ export function useArchive({ favouritesOnly = false }: { favouritesOnly?: boolea
 
 /** Sealed jars, newest first. `undefined` while loading. */
 export function useShelf() {
-  return useQuery(api.notes.listShelf);
+  const { isAuthenticated } = useConvexAuth();
+  return useQuery(api.notes.listShelf, isAuthenticated ? {} : "skip");
 }
 
 /** One jar's notes, newest first. `undefined` while loading; throws "Jar not found" if not yours. */
 export function useJarNotes(jarId: Id<"jars">) {
-  return useQuery(api.notes.listJarNotes, { jarId });
+  const { isAuthenticated } = useConvexAuth();
+  return useQuery(api.notes.listJarNotes, isAuthenticated ? { jarId } : "skip");
 }

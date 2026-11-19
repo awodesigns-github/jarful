@@ -42,12 +42,9 @@ export default function RootLayout() {
     ShantellSans_800ExtraBold,
   });
   const ready = loaded || !!error; // fall back to system fonts rather than hang on the splash
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync().catch(() => {});
-  }, [ready]);
   if (!ready) return null;
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={() => SplashScreen.hideAsync().catch(() => {})}>
       <SafeAreaProvider>
         <ThemeProvider>
           <DataProvider>
