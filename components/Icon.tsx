@@ -3,6 +3,8 @@ import Svg, { Path } from 'react-native-svg';
 // Paths copied from jarful-build-assets/icons (24 px grid, 2 px round stroke).
 const PATHS = {
   plus: ['M12 5V19M5 12H19'],
+  chevronLeft: ['M15 6L9 12L15 18'],
+  chevronRight: ['M9 6L15 12L9 18'],
   close: ['M18 6L6 18M6 6L18 18'],
   heart: [
     'M12 20.5L4.39999 13C2.29999 10.9 2.39999 7.6 4.59999 5.6C6.59999 3.8 9.59999 4.1 11.6 6.2L12 6.6L12.4 6.2C14.4 4.1 17.4 3.8 19.4 5.6C21.6 7.6 21.7 10.9 19.6 13L12 20.5Z',
