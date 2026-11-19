@@ -1,4 +1,5 @@
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
+import type { OptimisticLocalStore } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -10,25 +11,16 @@ export function useCurrentJar() {
   return useQuery(api.notes.getCurrentJar);
 }
 
-/**
- * `addNote({ text, colour? })` updates the jar's `noteCount` at once, before the
- * server answers. Rejects on empty or over-140-grapheme text.
- */
-export function useAddNote() {
-  return useMutation(api.notes.addNote).withOptimisticUpdate((store, { text }) => {
-    const current = store.getQuery(api.notes.getCurrentJar, {});
-    if (current === undefined) return; // not loaded yet
-    if (text.trim().length === 0) return;
-    store.setQuery(
-      api.notes.getCurrentJar,
-      {},
-      current === null
-        ? {
-            jarId: "optimistic" as Id<"jars">,
-            capacity: DEFAULT_CAPACITY,
-            noteCount: 1,
-          }
-        : { ...current, noteCount: current.noteCount + 1 },
-    );
-  });
+/** Optimistic update: the jar's noteCount goes up at once. */
+export function optimisticAddNote(store: OptimisticLocalStore, { text }: { text: string }) {
+  const current = store.getQuery(api.notes.getCurrentJar, {});
+  if (current === undefined) return; // not loaded yet
+  if (text.trim().length === 0) return;
+  store.setQuery(
+    api.notes.getCurrentJar,
+    {},
+    current === null
+      ? { jarId: "optimistic" as Id<"jars">, capacity: DEFAULT_CAPACITY, noteCount: 1 }
+      : { ...current, noteCount: current.noteCount + 1 },
+  );
 }
