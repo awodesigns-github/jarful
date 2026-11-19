@@ -312,7 +312,7 @@ function RevealCard({
             <Pressable
               testID="reveal-favourite"
               accessibilityRole="button"
-              accessibilityLabel="Favourite"
+              accessibilityLabel={fav ? 'Remove from favourites' : 'Add to favourites'}
               accessibilityState={{ selected: fav }}
               onPress={onHeart}
               style={[styles.heart, { backgroundColor: colors.bgSurface, borderColor: colors.borderSubtle }]}
