@@ -1,5 +1,5 @@
 /// <reference types="jest" />
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -22,6 +22,12 @@ function Wrapped({ children }: { children: React.ReactNode }) {
     </SafeAreaProvider>
   );
 }
+
+const mockBack = jest.fn();
+jest.mock('expo-router', () => {
+  const actual = jest.requireActual('expo-router');
+  return { ...actual, useRouter: () => ({ back: mockBack, canGoBack: () => true, replace: jest.fn(), push: jest.fn() }) };
+});
 
 describe('placeholder screens (US-13 shell)', () => {
   const cases: [string, React.ComponentType, string][] = [
@@ -138,9 +144,10 @@ describe('home jar and compose (M2 phase 2a)', () => {
     await fireEvent.press(getByTestId('mood-pink'));
     expect(getByTestId('mood-pink').props.accessibilityState.selected).toBe(true);
     await fireEvent.press(getByTestId('compose-drop'));
-    expect(mockAdd).toHaveBeenCalledWith({ text: 'Sunny walk', colour: 'pink' });
-    await Promise.resolve();
-    expect(mockDraft.clear).toHaveBeenCalled();
+    // BUG-3: the write waits for the modal to dismiss.
+    await waitFor(() => expect(mockAdd).toHaveBeenCalledWith({ text: 'Sunny walk', colour: 'pink' }));
+    expect(mockBack.mock.invocationCallOrder[0]).toBeLessThan(mockAdd.mock.invocationCallOrder[0]);
+    await waitFor(() => expect(mockDraft.clear).toHaveBeenCalled());
   });
 
   it('compose: empty draft disables drop, counter reads out', async () => {

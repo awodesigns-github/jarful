@@ -13,6 +13,10 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
+// The modal dismiss takes about 300 ms; wait it out before touching state.
+const DISMISS_MS = 450;
+const afterDismiss = () => new Promise<void>((resolve) => setTimeout(resolve, DISMISS_MS));
+
 export default function Compose() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -35,9 +39,13 @@ export default function Compose() {
     if (!canDrop || sending.current) return;
     sending.current = true;
     try {
+      // Leave first and write once the modal has finished dismissing: state
+      // updates landing mid-dismiss crash Fabric (BUG-3). The draft stays
+      // until the add resolves locally, so nothing is lost if it fails.
+      leave();
+      await afterDismiss();
       await addNote({ text, colour });
       clear();
-      leave();
     } catch {
       sending.current = false; // the draft stays; try again
     }
