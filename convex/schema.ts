@@ -35,5 +35,6 @@ export default defineSchema({
     theme: v.union(v.literal("system"), v.literal("light"), v.literal("dark")),
     reducedMotion: v.boolean(),
     haptics: v.boolean(),
+    lastRevealedNoteId: v.optional(v.id("notes")),
   }).index("by_userId", ["userId"]),
 });

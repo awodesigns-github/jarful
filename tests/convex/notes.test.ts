@@ -112,3 +112,95 @@ describe('addNote idempotency', () => {
     expect(notes[1].createdAt).toBeLessThanOrEqual(Date.now());
   });
 });
+
+describe('revealNote and setFavourite', () => {
+  const DAY = 86_400_000;
+  const dayStart = 10 * DAY;
+  async function seed(t: ReturnType<typeof makeT>, userId: any, rows: { text: string; createdAt: number; sealed?: boolean }[]) {
+    return t.run(async (ctx) => {
+      const ids: any[] = [];
+      for (const r of rows) {
+        const jarId = await ctx.db.insert('jars', {
+          userId, capacity: 30, startedAt: r.createdAt, ...(r.sealed ? { sealedAt: r.createdAt + 1 } : {}),
+        });
+        ids.push(await ctx.db.insert('notes', { userId, jarId, text: r.text, createdAt: r.createdAt, isFavourite: false }));
+      }
+      return ids;
+    });
+  }
+
+  it('rejects unauthenticated calls', async () => {
+    const t = makeT();
+    await expect(t.mutation(api.notes.revealNote, { dayStart })).rejects.toThrow('Not signed in');
+    const { as, userId } = await asUser(t, 'A');
+    const [id] = await seed(t, userId, [{ text: 'x', createdAt: 1 }]);
+    await expect(t.mutation(api.notes.setFavourite, { noteId: id, isFavourite: true })).rejects.toThrow('Not signed in');
+    expect(as).toBeDefined();
+  });
+
+  it('returns none-yet with no notes, and never reveals today', async () => {
+    const t = makeT();
+    const { as, userId } = await asUser(t, 'A');
+    expect(await as.mutation(api.notes.revealNote, { dayStart })).toEqual({ reason: 'none-yet' });
+    await seed(t, userId, [{ text: 'today', createdAt: dayStart + 5 }]);
+    expect(await as.mutation(api.notes.revealNote, { dayStart })).toEqual({ reason: 'none-yet' });
+  });
+
+  it('returns a single eligible note every time, and stores it in settings', async () => {
+    const t = makeT();
+    const { as, userId } = await asUser(t, 'A');
+    const [id] = await seed(t, userId, [{ text: 'old', createdAt: dayStart - 5 }, { text: 'today', createdAt: dayStart }]).then((x) => x);
+    for (let i = 0; i < 3; i++) {
+      expect(await as.mutation(api.notes.revealNote, { dayStart })).toMatchObject({ _id: id, text: 'old', colour: null });
+    }
+    const s = await t.run(async (ctx) => ctx.db.query('settings').collect());
+    expect(s).toHaveLength(1);
+    expect(s[0]).toMatchObject({ userId, lastRevealedNoteId: id, haptics: true, theme: 'system' });
+  });
+
+  it('does not repeat the last note and draws from sealed jars', async () => {
+    const t = makeT();
+    const { as, userId } = await asUser(t, 'A');
+    await seed(t, userId, [
+      { text: 'a', createdAt: 1, sealed: true },
+      { text: 'b', createdAt: 2, sealed: true },
+      { text: 'c', createdAt: 3 },
+    ]);
+    const seen = new Set<string>();
+    let prev = '';
+    for (let i = 0; i < 25; i++) {
+      const r: any = await as.mutation(api.notes.revealNote, { dayStart });
+      expect(r.text).not.toBe(prev);
+      prev = r.text;
+      seen.add(r.text);
+    }
+    expect(seen).toEqual(new Set(['a', 'b', 'c']));
+  });
+
+  it('setFavourite is owner-only and does not leak existence', async () => {
+    const t = makeT();
+    const a = await asUser(t, 'A');
+    const b = await asUser(t, 'B');
+    const [id] = await seed(t, a.userId, [{ text: 'mine', createdAt: 1 }]);
+    await expect(b.as.mutation(api.notes.setFavourite, { noteId: id, isFavourite: true })).rejects.toThrow('Note not found');
+    await a.as.mutation(api.notes.setFavourite, { noteId: id, isFavourite: true });
+    const n = await t.run(async (ctx) => ctx.db.get(id));
+    expect((n as any).isFavourite).toBe(true);
+  });
+
+  it('isolates users on reveal', async () => {
+    const t = makeT();
+    const a = await asUser(t, 'A');
+    const b = await asUser(t, 'B');
+    await seed(t, a.userId, [{ text: 'secret', createdAt: 1 }]);
+    expect(await b.as.mutation(api.notes.revealNote, { dayStart })).toEqual({ reason: 'none-yet' });
+  });
+
+  it('getCurrentJar returns note colours in order', async () => {
+    const t = makeT();
+    const { as } = await asUser(t, 'A');
+    await as.mutation(api.notes.addNote, { text: 'one', colour: 'sky' });
+    await as.mutation(api.notes.addNote, { text: 'two' });
+    expect(await as.query(api.notes.getCurrentJar, {})).toMatchObject({ colours: ['sky', null] });
+  });
+});

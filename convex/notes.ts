@@ -1,5 +1,6 @@
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { isNoteTooLong, NOTE_MAX } from "../lib/data/noteText";
 
@@ -93,6 +94,74 @@ export const getCurrentJar = query({
       jarId: jar._id,
       capacity: jar.capacity,
       noteCount: notes.length,
+      // Oldest first, one entry per slip; null = no mood colour.
+      colours: notes.slice(0, jar.capacity).map((n) => n.colour ?? null),
     };
+  },
+});
+
+const REVEAL_POOL = 300; // v1: newest 300 eligible notes. Scale plan in the handoff.
+
+export type RevealResult =
+  | { reason: "none-yet" }
+  | {
+      _id: Id<"notes">;
+      text: string;
+      colour: string | null;
+      createdAt: number;
+      isFavourite: boolean;
+    };
+
+/**
+ * A random past note from any jar. Excludes notes written today (createdAt >=
+ * dayStart, the client's local midnight) and the one shown last time, unless
+ * it is the only choice. A mutation, so the pick is never cached.
+ */
+export const revealNote = mutation({
+  args: { dayStart: v.number() },
+  handler: async (ctx, { dayStart }): Promise<RevealResult> => {
+    const userId = await requireUserId(ctx);
+    const settings = await ctx.db
+      .query("settings")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+    const pool = await ctx.db
+      .query("notes")
+      .withIndex("by_userId_createdAt", (q) => q.eq("userId", userId).lt("createdAt", dayStart))
+      .order("desc")
+      .take(REVEAL_POOL);
+    if (pool.length === 0) return { reason: "none-yet" };
+    const last = settings?.lastRevealedNoteId;
+    const others = pool.filter((n) => n._id !== last);
+    const choices = others.length > 0 ? others : pool;
+    const note = choices[Math.min(choices.length - 1, Math.floor(Math.random() * choices.length))];
+    if (settings) {
+      await ctx.db.patch(settings._id, { lastRevealedNoteId: note._id });
+    } else {
+      await ctx.db.insert("settings", {
+        userId,
+        theme: "system",
+        reducedMotion: false,
+        haptics: true,
+        lastRevealedNoteId: note._id,
+      });
+    }
+    return {
+      _id: note._id,
+      text: note.text,
+      colour: note.colour ?? null,
+      createdAt: note.createdAt,
+      isFavourite: note.isFavourite,
+    };
+  },
+});
+
+export const setFavourite = mutation({
+  args: { noteId: v.id("notes"), isFavourite: v.boolean() },
+  handler: async (ctx, { noteId, isFavourite }) => {
+    const userId = await requireUserId(ctx);
+    const note = await ctx.db.get(noteId);
+    if (note === null || note.userId !== userId) throw new Error("Note not found");
+    await ctx.db.patch(noteId, { isFavourite });
   },
 });
