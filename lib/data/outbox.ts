@@ -15,6 +15,8 @@ export type PendingNote = {
   text: string;
   colour?: string;
   createdAt: number;
+  /** Who was signed in when the note was written (null/absent: not known yet). NOTE-3. */
+  userId?: string | null;
 };
 
 export const DRAFT_KEY = "jarful.draft";
@@ -31,7 +33,7 @@ export function newClientId(now = Date.now(), rand = Math.random) {
   return `${now.toString(36)}-${Math.floor(rand() * 2 ** 32).toString(36)}`;
 }
 
-export function createOutbox(store: KeyValueStore) {
+export function createOutbox(store: KeyValueStore, opts: { requireUser?: boolean } = {}) {
   let queue: PendingNote[] = [];
   let inflight = new Set<string>();
   let loaded: Promise<void> | null = null;
@@ -39,10 +41,20 @@ export function createOutbox(store: KeyValueStore) {
   const listeners = new Set<() => void>();
   // Cached so useSyncExternalStore gets a stable snapshot between changes.
   let count = 0;
+  let held = 0;
+  // undefined = not checking owners (user not known yet); string = the signed-in user.
+  let currentUser: string | undefined;
+  // NOTE-3: a note belongs to the user who wrote it. If the session now belongs
+  // to someone else (an expired anonymous token led to a new anonymous user),
+  // the note is held on the device instead of flowing into the wrong account.
+  const isHeld = (n: PendingNote) =>
+    currentUser !== undefined && n.userId != null && n.userId !== currentUser;
   const emit = () => {
-    count = queue.filter((n) => !inflight.has(n.clientId)).length;
+    count = queue.filter((n) => !inflight.has(n.clientId) && !isHeld(n)).length;
+    held = queue.filter(isHeld).length;
     listeners.forEach((l) => l());
   };
+  const persist = (n: PendingNote) => store.setItem(noteKey(n.clientId), JSON.stringify(n));
   const saveIndex = () =>
     store.setItem(INDEX_KEY, JSON.stringify(queue.map((n) => n.clientId)));
 
@@ -86,7 +98,14 @@ export function createOutbox(store: KeyValueStore) {
     flushing ??= (async () => {
       try {
         await load();
+        // Do not send anything until we know who is signed in (NOTE-3).
+        if (opts.requireUser && currentUser === undefined) return;
         for (const note of [...queue]) {
+          if (isHeld(note)) continue; // belongs to another account; keep it
+          if (currentUser !== undefined && note.userId == null) {
+            note.userId = currentUser; // written before the user was known
+            await persist(note);
+          }
           inflight.add(note.clientId);
           emit();
           try {
@@ -109,10 +128,57 @@ export function createOutbox(store: KeyValueStore) {
     return flushing;
   }
 
+  /** Tell the outbox who is signed in (undefined = unknown). Held notes are re-evaluated. */
+  function setCurrentUser(id: string | undefined) {
+    currentUser = id;
+    emit();
+  }
+
+  /** The user chose to add held notes to the current account. */
+  async function adoptHeld() {
+    await load();
+    if (currentUser === undefined) return;
+    for (const n of queue) {
+      if (isHeld(n)) {
+        n.userId = currentUser;
+        await persist(n);
+      }
+    }
+    emit();
+  }
+
+  /** After a merge: notes owned by the old anonymous user now belong to the account. */
+  async function reassign(from: string, to: string) {
+    await load();
+    for (const n of queue) {
+      if (n.userId === from) {
+        n.userId = to;
+        await persist(n);
+      }
+    }
+    emit();
+  }
+
+  /** Remove every pending note and the draft (after deleting the account). */
+  async function clear() {
+    await load();
+    const ids = queue.map((n) => n.clientId);
+    queue = [];
+    inflight = new Set();
+    await store.removeItem(INDEX_KEY);
+    for (const id of ids) await store.removeItem(noteKey(id));
+    emit();
+  }
+
   return {
     load,
     enqueue,
     flush,
+    setCurrentUser,
+    adoptHeld,
+    reassign,
+    clear,
+    getHeldCount: () => held,
     getPendingCount: () => count,
     pending: () => [...queue],
     subscribe(l: () => void) {

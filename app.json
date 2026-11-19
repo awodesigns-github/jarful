@@ -39,7 +39,8 @@
       "expo-font",
       "expo-secure-store",
       "expo-notifications",
-      "expo-sensors"
+      "expo-sensors",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
