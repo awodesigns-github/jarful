@@ -51,7 +51,10 @@ export default function Home() {
   const capacity = jar?.capacity ?? DEFAULT_CAPACITY;
   const total = (jar?.noteCount ?? 0) + pendingCount;
   const fill = capacity > 0 ? Math.min(1, total / capacity) : 0;
-  const isEmpty = total === 0;
+  // Empty only when we know it: the jar answered (or there is nothing pending) and it holds nothing.
+  // While the jar is unknown (loading or offline) with nothing pending, show neutral copy.
+  const known = jar !== undefined || pendingCount > 0;
+  const isEmpty = known && total === 0;
 
   // Reveal: an overlay inside Home, not a route.
   const reveal = useRevealNote();
@@ -116,7 +119,7 @@ export default function Home() {
           </Animated.View>
         </Pressable>
         <Text style={[type.bodyM, styles.hint, { color: colors.textSecondary }]}>
-          {isEmpty ? 'Your jar is ready for its first good thing' : 'Add something good whenever you are ready'}
+          {isEmpty ? 'Your jar is ready for its first good thing' : !known ? 'Your jar is here whenever you are ready' : 'Add something good whenever you are ready'}
         </Text>
         {!online && (
           <Text testID="home-offline" accessibilityLiveRegion="polite" style={[type.labelS, { color: colors.textSecondary }]}>
