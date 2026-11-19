@@ -29,3 +29,9 @@ export function creaseHaptic(): void {
   if (!enabled) return;
   Haptics.selectionAsync().catch(() => {});
 }
+
+/** The lid seats on a full jar. Fired at the seat, with the visual. */
+export function sealHaptic(): void {
+  if (!enabled) return;
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+}

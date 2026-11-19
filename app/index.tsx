@@ -1,19 +1,61 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo } from 'react-native';
 import { Link, useNavigation, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCurrentJar, usePendingNotes, useRevealNote, type RevealResult } from '@/lib/data';
-import { Animated, useAnimatedStyle, useReduced, useSharedValue, withSequence, withTiming } from '@/motion/primitives';
-import { EIO } from '@/motion/curves';
+import { useCurrentJar, useLastSeal, usePendingNotes, useRevealNote, useShelf, type RevealResult } from '@/lib/data';
+import { Animated, ReduceMotion, useAnimatedStyle, useReduced, useSharedValue, withDelay, withSequence, withTiming } from '@/motion/primitives';
+import { dropCoordinator } from '@/motion/dropCoordinator';
+import { loadPlayedSeals, markSealPlayed, pendingSealId, shouldPlaySeal } from '@/motion/sealPlayed';
+import { EIO, EO } from '@/motion/curves';
 import { useShake } from '@/motion/useShake';
 import { RevealOverlay } from '@/components/reveal/RevealOverlay';
 import { Icon } from '@/components/Icon';
 import { jarFillLabel } from '@/components/jar/Jar';
 import { DropJar } from '@/components/jar/DropJar';
+import { SealStage } from '@/components/jar/SealStage';
 import { useOnline } from '@/components/useOnline';
 import { MIN_TARGET, useTheme } from '@/theme';
 
 const DEFAULT_CAPACITY = 30;
+const SEAL_LINE = "Jar full. It's on your shelf now";
+const SEAL_LINE_DELAY = 1000; // with the shelf slide
+const SEAL_LINE_HOLD = 2400;
+
+/** One calm line after a seal. Fades in, holds, fades out; announced to TalkBack. No counts. */
+function SealLine({ color, style, onGone }: { color: string; style: object; onGone: () => void }) {
+  const o = useSharedValue(0);
+  const style$ = useAnimatedStyle(() => ({ opacity: o.get() }));
+  useEffect(() => {
+    // A fade, so it also runs under reduced motion.
+    const N = ReduceMotion.Never;
+    o.set(
+      withDelay(
+        SEAL_LINE_DELAY,
+        withSequence(
+          N,
+          withTiming(1, { duration: 200, easing: EO, reduceMotion: N }),
+          withTiming(1, { duration: SEAL_LINE_HOLD, reduceMotion: N }),
+          withTiming(0, { duration: 300, easing: EO, reduceMotion: N }),
+        ),
+        N,
+      ),
+    );
+    const a = setTimeout(() => AccessibilityInfo.announceForAccessibility(SEAL_LINE), SEAL_LINE_DELAY);
+    const g = setTimeout(onGone, SEAL_LINE_DELAY + 200 + SEAL_LINE_HOLD + 300 + 100);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(g);
+    };
+  }, []);
+  return (
+    <Animated.View style={style$}>
+      <Text testID="seal-line" accessibilityLiveRegion="polite" style={[style, { color }]}>
+        {SEAL_LINE}
+      </Text>
+    </Animated.View>
+  );
+}
 
 type FocusNav = { isFocused: () => boolean; addListener: (e: 'focus' | 'blur', cb: () => void) => () => void };
 
@@ -49,7 +91,20 @@ export default function Home() {
   const { colors, type, space, radius } = theme;
 
   const capacity = jar?.capacity ?? DEFAULT_CAPACITY;
-  const total = (jar?.noteCount ?? 0) + pendingCount;
+
+  // Seal: the server has sealed the jar (useLastSeal) and Home has not played it yet.
+  const lastSeal = useLastSeal();
+  const shelf = useShelf();
+  const [played, setPlayed] = useState<Set<string> | null>(null);
+  const [sealing, setSealing] = useState<string | null>(null);
+  const [sealLine, setSealLine] = useState(false);
+  const [skipSeq, setSkipSeq] = useState(0);
+  const [tick, setTick] = useState(0);
+  const sealJarId = lastSeal?.jarId ?? null;
+  const waitingSeal = pendingSealId({ sealJarId, played });
+  const sealedColours = sealJarId ? shelf?.find((j) => j.jarId === sealJarId)?.colours : undefined;
+  // Until the seal has played the jar stays full, so the 30th note lands in a full jar.
+  const total = waitingSeal || sealing ? capacity : (jar?.noteCount ?? 0) + pendingCount;
   const fill = capacity > 0 ? Math.min(1, total / capacity) : 0;
   // Empty only when we know it: the jar answered (or there is nothing pending) and it holds nothing.
   // While the jar is unknown (loading or offline) with nothing pending, show neutral copy.
@@ -67,6 +122,39 @@ export default function Home() {
   const nudgeStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${nudge.get()}deg` }] }));
   const open = shown !== null;
 
+  useEffect(() => {
+    let alive = true;
+    void loadPlayedSeals().then((p) => alive && setPlayed(p));
+    return () => {
+      alive = false;
+    };
+  }, []);
+  // Wake when a drop has landed, so a seal waiting on it can start.
+  useEffect(() => dropCoordinator.subscribe(() => setTick((t) => t + 1)), []);
+  useEffect(() => {
+    const dropBusy = dropCoordinator.isBusy();
+    const id = shouldPlaySeal({ sealJarId, played, dropBusy, focused, sealing: sealing !== null, revealOpen: open });
+    if (id) {
+      // Mark before playing, so a restart mid-seal never replays it.
+      setPlayed((prev) => new Set(prev ?? []).add(id));
+      void markSealPlayed(played ?? new Set(), id);
+      setSealing(id);
+      setSealLine(true);
+      return;
+    }
+    // A stuck drop stops counting as busy after STALE_MS; look again.
+    if (dropBusy && waitingSeal) {
+      const t = setTimeout(() => setTick((n) => n + 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [sealJarId, played, focused, sealing, open, tick]);
+  // Leaving Home mid-seal (compose) finishes it cleanly.
+  useEffect(() => {
+    if (!focused && sealing) setSkipSeq((n) => n + 1);
+  }, [focused]);
+  const sealDone = useCallback(() => setSealing(null), []);
+  const sealGone = useCallback(() => setSealLine(false), []);
+
   const run = useCallback(async () => {
     if (busy.current) return;
     busy.current = true;
@@ -81,6 +169,10 @@ export default function Home() {
 
   const onJarPress = () => {
     if (open) return;
+    if (sealing) {
+      setSkipSeq((n) => n + 1);
+      return;
+    }
     if (!reduced) nudge.set(withSequence(withTiming(-2, { duration: 90, easing: EIO }), withTiming(0, { duration: 90, easing: EIO })));
     void run();
   };
@@ -110,17 +202,25 @@ export default function Home() {
         <Pressable
           testID="home-jar"
           accessibilityRole="button"
-          accessibilityLabel={jarFillLabel(fill)}
-          accessibilityHint="Opens a note from the past"
+          accessibilityLabel={sealing ? 'Your jar is full and on your shelf' : jarFillLabel(fill)}
+          accessibilityHint={sealing ? undefined : 'Opens a note from the past'}
           onPress={onJarPress}
         >
           <Animated.View style={nudgeStyle}>
-            <DropJar total={total} capacity={capacity} width={260} colours={jar?.colours} />
+            {sealing ? (
+              <SealStage width={260} colours={sealedColours} skipSeq={skipSeq} onDone={sealDone} />
+            ) : (
+              <DropJar total={total} capacity={capacity} width={260} colours={jar?.colours ?? (waitingSeal ? sealedColours : undefined)} />
+            )}
           </Animated.View>
         </Pressable>
+        {sealLine ? (
+          <SealLine color={colors.textSecondary} style={[type.bodyM, styles.hint]} onGone={sealGone} />
+        ) : (
         <Text style={[type.bodyM, styles.hint, { color: colors.textSecondary }]}>
           {isEmpty ? 'Your jar is ready for its first good thing' : !known ? 'Your jar is here whenever you are ready' : 'Add something good whenever you are ready'}
         </Text>
+        )}
         {!online && (
           <Text testID="home-offline" accessibilityLiveRegion="polite" style={[type.labelS, { color: colors.textSecondary }]}>
             Saved on this phone

@@ -16,6 +16,7 @@ export const mockReveal = jest.fn();
 export const mockSetFav = jest.fn();
 export const mockDraft = { text: '', setText: jest.fn(), clear: jest.fn() };
 export const mockArchive: { favs: unknown; all: unknown; status: string; loadMore: jest.Mock } = { favs: [], all: [], status: 'Exhausted', loadMore: jest.fn() };
+export const mockSeal: { current: { jarId: string; sealedAt: number } | null | undefined } = { current: null };
 export const mockShelf: { current: unknown[] | undefined } = { current: [] };
 export const mockJarNotes: { current: unknown[] | undefined } = { current: [] };
 export const mockNotes: { current: { _id: string; text: string }[] | undefined } = { current: [] };
@@ -33,6 +34,7 @@ jest.mock('@/lib/data', () => ({
     const notes = favouritesOnly ? m.favs : m.all;
     return { notes, months: jest.requireActual('@/lib/data/archive').groupByMonth(notes), status: m.status, loadMore: m.loadMore };
   },
+  useLastSeal: () => require('./setup').mockSeal.current,
   useShelf: () => require('./setup').mockShelf.current,
   useJarNotes: () => require('./setup').mockJarNotes.current,
   useAddNote: () => require('./setup').mockAdd,
@@ -62,6 +64,7 @@ jest.mock('@/motion/primitives', () => {
     scheduleOnRN: (fn: (...a: unknown[]) => void, ...args: unknown[]) => fn(...args),
     Animated: { View: React.forwardRef((p: object, r: unknown) => React.createElement(View, { ...p, ref: r })) },
     Easing: { bezier: () => (t: number) => t },
+    ReduceMotion: { Never: 'never', System: 'system' },
     useSharedValue: (v: unknown) => React.useRef(sv(v)).current,
     useAnimatedStyle: (fn: () => object) => fn(),
     useReduced: () => false,
@@ -74,7 +77,9 @@ jest.mock('@/motion/primitives', () => {
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn().mockResolvedValue(undefined),
   selectionAsync: jest.fn().mockResolvedValue(undefined),
+  notificationAsync: jest.fn().mockResolvedValue(undefined),
   ImpactFeedbackStyle: { Light: 'light' },
+  NotificationFeedbackType: { Success: 'success' },
 }));
 
 jest.mock('expo-sensors', () => ({ Accelerometer: { setUpdateInterval: jest.fn(), addListener: jest.fn(() => ({ remove: jest.fn() })) } }));
