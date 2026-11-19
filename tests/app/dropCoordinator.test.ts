@@ -1,4 +1,4 @@
-import { createDropCoordinator } from '@/motion/dropCoordinator';
+import { createDropCoordinator, STALE_MS } from '@/motion/dropCoordinator';
 
 const note = { text: 'a good thing' };
 
@@ -44,5 +44,15 @@ describe('drop-in sequencing (BUG-3)', () => {
     expect(c.phase()).toBe('landing');
     c.landed();
     expect(c.phase()).toBe('idle');
+  });
+
+  it('releases a drop that is stuck past STALE_MS', () => {
+    let t = 0;
+    const c = createDropCoordinator(() => t);
+    expect(c.request({ text: 'a' })).toBe(true);
+    c.leaving();
+    expect(c.request({ text: 'b' })).toBe(false);
+    t = STALE_MS + 1;
+    expect(c.request({ text: 'b' })).toBe(true);
   });
 });

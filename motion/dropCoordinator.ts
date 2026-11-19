@@ -7,18 +7,25 @@
 export type DropNote = { text: string; colour?: string };
 type Phase = 'idle' | 'folding' | 'leaving' | 'adding' | 'landing';
 
-export function createDropCoordinator() {
+/** A drop that hasn't finished after this long is treated as stuck (e.g. a missed transitionEnd). */
+export const STALE_MS = 5000;
+
+export function createDropCoordinator(now: () => number = Date.now) {
   let phase: Phase = 'idle';
   let pending: DropNote | null = null;
+  let since = 0;
 
   return {
     phase: () => phase,
     pending: () => pending,
     /** Compose taps "Drop it in". False when a drop is already running, so no double-add. */
     request(note: DropNote): boolean {
+      // A stuck drop releases itself; its draft is still on the phone, so nothing is lost.
+      if (phase !== 'idle' && phase !== 'adding' && now() - since > STALE_MS) phase = 'idle';
       if (phase !== 'idle') return false;
       phase = 'folding';
       pending = note;
+      since = now();
       return true;
     },
     /** The fold finished and compose is about to navigate back. */

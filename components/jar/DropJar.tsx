@@ -83,7 +83,11 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260 }: Props) 
       slipOpacity.set(
         withTiming(1, { duration: 180, easing: EO }, (finished) => {
           'worklet';
-          if (!finished) return;
+          // Always release the coordinator, or an interrupted drop would block every later one.
+          if (!finished) {
+            scheduleOnRN(landed);
+            return;
+          }
           slipOpacity.set(withTiming(0, { duration: 150, easing: EO }));
           jarOpacity.set(withSequence(withTiming(0.85, { duration: 0 }), withTiming(1, { duration: 200, easing: EO })));
           scheduleOnRN(landed);
@@ -95,7 +99,10 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260 }: Props) 
     fall.set(
       withTiming(1, { duration: 420, easing: EIO }, (finished) => {
         'worklet';
-        if (!finished) return;
+        if (!finished) {
+          scheduleOnRN(landed);
+          return;
+        }
         slipOpacity.set(0);
         settle(); // same frame as the haptic below
         scheduleOnRN(landed);
