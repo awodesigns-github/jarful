@@ -63,6 +63,6 @@ export function slipColours(colours: (string | null)[] | undefined, mood: Record
   });
 }
 
-/** The Rive timeline: the note lands at frame 95 and the scene ends at frame 128 (60 fps). */
+/** The Rive timeline: the note lands at frame 95 and the scene ends at frame 154 (60 fps). */
 export const RIVE_LAND_MS = 1583;
-export const RIVE_DONE_MS = 2133;
+export const RIVE_DONE_MS = 2567;

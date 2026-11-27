@@ -83,7 +83,7 @@ export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, t
       num('landY', landing.y);
       num('landRot', landing.rot);
       num('labelOpacity', slots === 0 ? 1 : 0);
-      num('faceOpacity', 0);
+      num('faceOpacity', 1);
       color('jarGlass', theme.glass);
       color('jarLine', theme.line);
       color('labelFill', theme.label);

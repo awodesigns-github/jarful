@@ -10,7 +10,7 @@ next slip slot, the jar wobbles ±2° once, the lid closes.
   offset by (50, 260): jar point (x, y) is artboard (x + 50, y + 252). Don't move it, or the hand-off
   back to the app's jar will jump.
 - Timing follows the Figma interaction notes: lid lifts and tilts (250 ms), two folds, soft curve in
-  (550 ms), squash, ±2° wobble, lid closes. 130 frames at 60 fps.
+  (550 ms), squash, ±2° wobble, lid closes. Happy face, eased back to Waiting. 156 frames at 60 fps.
 
 ## Preview
 
@@ -39,6 +39,6 @@ Rive splash screen on published files; publish from a paid workspace for the app
 | landX, landY, landRot | number | centre (slips.ts coordinates) and angle (radians) of the next slip |
 | jarGlass, jarLine, labelFill | colour | theme (light FFFFFF / 2E2A26 / FBF6EC, dark 2D2621 / F3EBDD / 221C18) |
 | labelOpacity | number | 1 on an empty jar |
-| faceOpacity | number | 1 shows the Figma face; 0 for now, since the home jar draws none |
+| faceOpacity | number | 1 shows the face (the app sets 1; the home jar draws the Waiting face) |
 
-Events: `noteLanded` (frame 95: haptic) and `dropFinished` (frame 128: unmount).
+Events: `noteLanded` (frame 95: haptic) and `dropFinished` (frame 154: unmount).

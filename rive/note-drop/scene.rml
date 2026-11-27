@@ -73,7 +73,7 @@
         </Shape>
                     </Node>
                 </Node>
-                <!-- Face: off by default because the home jar draws none yet (faceOpacity = 1 turns it on) -->
+                <!-- Face: the app sets faceOpacity = 1 (the home jar draws the Waiting face too) -->
                 <Node opacity="0" name="Faces" id="0:124">
                     <DataBindContext sourcePathIds="0:40-0:55" propertyKey="18"/>
     <Node opacity="0" name="face_happy" id="0:120">
@@ -1361,8 +1361,10 @@
             62-95   soft curve into the jar (550 ms), shrinking to slip size
             95      lands: tiny squash, face Waiting to Happy, noteLanded event, jar wobbles ±2° once
             110-126 lid comes back down
+            138-150 face eases back from Happy to Waiting (200 ms), matching the home jar
+            154     dropFinished: the app swaps back to the home jar
         -->
-        <LinearAnimation fps="60" duration="130" name="Fold and Drop" id="0:6">
+        <LinearAnimation fps="60" duration="156" name="Fold and Drop" id="0:6">
 
             <!-- Lid: lift and tilt, then close -->
             <KeyedObject objectId="0:110">
@@ -1624,17 +1626,21 @@
                     <KeyFrameDouble value="1" frame="108" interpolationType="hold"/>
                 </KeyedProperty>
             </KeyedObject>
-            <!-- Face: Waiting to Happy as the note lands (only seen when faceOpacity = 1) -->
+            <!-- Face: Waiting to Happy as the note lands, held, then eased back to Waiting before the hand-off -->
             <KeyedObject objectId="0:121">
                 <KeyedProperty property="opacity">
                     <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
                     <KeyFrameDouble value="0" frame="95" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="138" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="150" interpolationType="hold"/>
                 </KeyedProperty>
             </KeyedObject>
             <KeyedObject objectId="0:120">
                 <KeyedProperty property="opacity">
                     <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
                     <KeyFrameDouble value="1" frame="95" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="138" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="150" interpolationType="hold"/>
                 </KeyedProperty>
             </KeyedObject>
             <!-- An empty jar loses its label as the first note lands, like the home jar -->
@@ -1653,7 +1659,7 @@
             </KeyedObject>
             <KeyedObject objectId="0:61">
                 <KeyedProperty property="trigger">
-                    <KeyFrameCallback frame="128"/>
+                    <KeyFrameCallback frame="154"/>
                 </KeyedProperty>
             </KeyedObject>
             <!-- Jar wobbles ±2° once (front and back together) -->
@@ -1688,7 +1694,7 @@
       landX, landY, landRot            centre (slips.ts coordinates) and angle (radians) of the next slip
       jarGlass, jarLine, labelFill     theme colours (light FFFFFF / 2E2A26 / FBF6EC, dark 2D2621 / F3EBDD / 221C18)
       labelOpacity                     1 on an empty jar, else 0
-      faceOpacity                      1 to show the Figma face (the home jar has none yet)
+      faceOpacity                      1 to show the face (the app sets 1; 0 hides it)
     -->
     <ViewModel defaultInstanceId="0:41" name="NoteDrop" id="0:40">
         <ViewModelPropertyColor name="noteColour" id="0:42"/>

@@ -65,6 +65,7 @@ describe('Rive drop-in', () => {
     expect(mockRive.values.slip01).toBe(mood.red);
     expect(mockRive.values.slip03).toBe('#e9dfcc');
     expect(mockRive.values.labelOpacity).toBe(0);
+    expect(mockRive.values.faceOpacity).toBe(1); // the face reacts, and the home jar draws it too
     expect(typeof mockRive.values.landX).toBe('number');
   });
 
@@ -97,6 +98,11 @@ describe('Rive drop-in', () => {
     expect(r.queryByTestId('rive-note-drop', { includeHiddenElements: true })).toBeNull();
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(dropCoordinator.phase()).toBe('idle');
+  });
+
+  it('draws the Waiting face on the home jar, so the scene hands back to the same face', async () => {
+    const r = await render(ui);
+    expect(r.getByTestId('jar-face', { includeHiddenElements: true })).toBeTruthy();
   });
 
   it('uses the Reanimated drop when the scene file is not loaded', async () => {
