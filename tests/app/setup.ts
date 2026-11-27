@@ -107,3 +107,48 @@ jest.mock('expo-notifications', () => ({
   getLastNotificationResponseAsync: jest.fn().mockResolvedValue(null),
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
 }));
+
+// Rive (the drop-in scene). By default the file never loads, so Home uses the Reanimated
+// fallback. Tests that exercise the Rive path set `mockRive.file` and drive `mockRive.emit`.
+export const mockRive: {
+  file: object | undefined;
+  values: Record<string, unknown>;
+  triggered: string[];
+  emit: ((name: string) => void) | null;
+  viewReady: boolean;
+} = { file: undefined, values: {}, triggered: [], emit: null, viewReady: true };
+jest.mock('@rive-app/react-native', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const m = () => require('./setup').mockRive;
+  const prop = (name: string) => ({ set: (v: unknown) => (m().values[name] = v) });
+  const ref = {
+    onEventListener: (fn: (e: { name: string }) => void) => (m().emit = (name: string) => fn({ name })),
+    removeEventListeners: () => (m().emit = null),
+  };
+  return {
+    Fit: { Contain: 'contain' },
+    RiveColor: { fromHexString: (h: string) => ({ toInt: () => h }) },
+    useRiveFile: () => (m().file ? { riveFile: m().file, isLoading: false, error: null } : { riveFile: undefined, isLoading: true, error: null }),
+    useViewModelInstance: (file: unknown) => {
+      const instance = React.useMemo(
+        () => ({
+          colorProperty: prop,
+          numberProperty: prop,
+          stringProperty: prop,
+          triggerProperty: (name: string) => ({ trigger: () => m().triggered.push(name) }),
+        }),
+        [],
+      );
+      return file ? { instance, isLoading: false, error: null } : { instance: undefined, isLoading: true, error: null };
+    },
+    useRive: () => {
+      const [r, setR] = React.useState(undefined);
+      return { riveViewRef: r, setHybridRef: { f: () => setR(m().viewReady ? ref : null) } };
+    },
+    RiveView: (p: { hybridRef: { f: () => void } }) => {
+      React.useEffect(() => p.hybridRef.f(), []);
+      return React.createElement(View, { testID: 'rive-note-drop' });
+    },
+  };
+});

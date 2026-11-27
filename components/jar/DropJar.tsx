@@ -12,13 +12,21 @@ import {
   withTiming,
 } from '@/motion/primitives';
 import Svg, { G, Path } from 'react-native-svg';
+import { useRiveFile } from '@rive-app/react-native';
 import { useAddNote, useDraft, type MoodName } from '@/lib/data';
-import { mood } from '@/theme';
+import { mood, useTheme } from '@/theme';
 import { EIO, EO, SPRING } from '@/motion/curves';
 import { dropCoordinator } from '@/motion/dropCoordinator';
 import { landHaptic } from '@/motion/haptics';
 import { Jar, JAR_CAPACITY } from './Jar';
 import { HIGHLIGHT_PATH } from './slips';
+import { RiveNoteDrop, type RiveDropNote } from './RiveNoteDrop';
+import { jarSlots, landingSlot, noteColours, slipColours, type LandingSlot } from './riveNoteDrop';
+
+/** The drop-in scene (rive/note-drop, built with `rive . --publish`). */
+const NOTE_DROP_RIV = require('@/assets/rive/note-drop.riv');
+
+type RiveDrop = { note: RiveDropNote; slots: number; landing: LandingSlot; slipColours: string[] };
 
 const LINE = '#2e2a26';
 const FALL = 86; // px from the top of the lane to just inside the lid
@@ -44,14 +52,24 @@ type Props = {
 };
 
 /**
- * The home jar with the drop-in motion (docs/M1-motion-spec.md, section 1).
- * Part 2 of the drop: once Home's transition from compose has ended it adds the note,
- * plays the fall, and lets the jar settle as the new slip appears. All movement is on
- * shared values; the only React state is `held`, changed while no navigation is running.
+ * The home jar with the drop-in motion.
+ * Once Home's transition from compose has ended it adds the note and plays the drop: the Rive
+ * scene (fold, drop onto the next slip, wobble; docs/decisions.md 2026-11-27) laid over this jar,
+ * or, with reduced motion or if the scene cannot start, the Reanimated fall and fades
+ * (docs/M1-motion-spec.md, section 1). React state (`held`, `riveDrop`, `riveShowing`) only
+ * changes while no navigation is running.
  */
 export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }: Props) {
   const navigation = useOptionalNavigation();
   const reduced = useReduced();
+  const { theme } = useTheme();
+  const { riveFile } = useRiveFile(NOTE_DROP_RIV);
+  const [riveDrop, setRiveDrop] = useState<RiveDrop | null>(null);
+  const [riveShowing, setRiveShowing] = useState(false); // the scene covers the jar: hide ours
+  const coloursRef = useRef(colours);
+  coloursRef.current = colours;
+  const capacityRef = useRef(capacity);
+  capacityRef.current = capacity;
   const addNote = useAddNote();
   const { clear } = useDraft();
   const [held, setHeld] = useState(0); // slips not yet shown, until the note lands
@@ -119,8 +137,10 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
 
   const start = useCallback(async () => {
     if (dropCoordinator.phase() !== 'leaving') return;
-    const colour = dropCoordinator.pending()?.colour as MoodName | undefined;
-    const first = totalRef.current === 0;
+    const pending = dropCoordinator.pending();
+    const colour = pending?.colour as MoodName | undefined;
+    const before = totalRef.current;
+    const first = before === 0;
     slipColour.set(colour ? mood[colour] : mood.yellow);
     setHeld(1);
     const ok = await dropCoordinator.dismissed({
@@ -131,8 +151,47 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
       setHeld(0); // the add failed: the draft is still in compose
       return;
     }
-    play(first);
-  }, [addNote, clear, reduced]);
+    if (reduced || !riveFile || !pending) {
+      play(first);
+      return;
+    }
+    const cap = capacityRef.current;
+    setRiveDrop({
+      note: { text: pending.text, ...noteColours(colour ? mood[colour] : undefined, theme.colors) },
+      slots: jarSlots(before, cap),
+      landing: landingSlot(before, cap),
+      slipColours: slipColours(coloursRef.current ?? undefined, mood),
+    });
+  }, [addNote, clear, reduced, riveFile, theme]);
+
+  // Rive drop callbacks. The scene lands on the slot our jar shows next, so when it ends our jar
+  // (lid back, new slip in place) takes over with nothing moving.
+  const riveShowingRef = useRef(false);
+  riveShowingRef.current = riveShowing;
+  const riveFirstRef = useRef(false);
+  riveFirstRef.current = !!riveDrop && riveDrop.slots === 0;
+  const onRiveReady = useCallback(() => setRiveShowing(true), []);
+  // Touchdown: haptic and the new slip (hidden under the scene until it ends).
+  const onRiveLanded = useCallback(() => {
+    landHaptic();
+    setHeld(0);
+  }, []);
+  // The scene has ended: our jar takes over, then the coordinator is released (a waiting seal
+  // starts only now, never under the scene).
+  const onRiveDone = useCallback(() => {
+    setRiveShowing(false);
+    setRiveDrop(null);
+    setHeld(0);
+    dropCoordinator.landed();
+  }, []);
+  const onRiveFail = useCallback(() => {
+    // Could not start (or broke mid-way): fall back to the Reanimated drop, or finish cleanly.
+    const wasShowing = riveShowingRef.current;
+    setRiveShowing(false);
+    setRiveDrop(null);
+    if (wasShowing) landed();
+    else play(riveFirstRef.current);
+  }, [landed]);
 
   // The compose modal's dismiss has finished when Home's transition ends (Android) or, where the
   // sheet dismissal sends no transitionEnd to this screen (iOS, BUG-6), when Home regains focus.
@@ -192,6 +251,8 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
 
   return (
     <View style={{ width, height }}>
+      {/* Hidden (not unmounted) while the Rive scene covers it. */}
+      <View style={{ opacity: riveShowing ? 0 : 1 }}>
       <Animated.View style={[{ width, height, transformOrigin: 'bottom' }, jarStyle]}>
         <Jar fill={fill} width={width} colours={colours} />
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, glowStyle]}>
@@ -202,10 +263,26 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
           </Svg>
         </Animated.View>
       </Animated.View>
+      </View>
       {/* The lane above the lid: the slip is clipped where it enters the jar. */}
       <View pointerEvents="none" style={[styles.lane, { height: FALL, top: -FALL + 6 }]}>
         <Animated.View style={[styles.slip, slipStyle]} />
       </View>
+      {riveDrop && riveFile && (
+        <RiveNoteDrop
+          file={riveFile}
+          width={width}
+          note={riveDrop.note}
+          slots={riveDrop.slots}
+          landing={riveDrop.landing}
+          slipColours={riveDrop.slipColours}
+          theme={{ glass: theme.colors.jarGlass, line: theme.colors.jarLine, label: theme.colors.bgBase }}
+          onReady={onRiveReady}
+          onLanded={onRiveLanded}
+          onDone={onRiveDone}
+          onFail={onRiveFail}
+        />
+      )}
     </View>
   );
 }

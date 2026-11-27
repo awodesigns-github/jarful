@@ -1,25 +1,14 @@
 import { useState } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import {
-  Animated,
-  scheduleOnRN,
-  useAnimatedStyle,
-  useSharedValue,
-  useReduced,
-  withDelay,
-  withTiming,
-} from '@/motion/primitives';
+import { Animated, scheduleOnRN, useAnimatedStyle, useSharedValue, useReduced, withTiming } from '@/motion/primitives';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { countNoteChars, NOTE_MAX, NOTE_RAW_MAX, useAddNote, useDraft, type MoodName } from '@/lib/data';
 import { CharCounter } from '@/components/CharCounter';
 import { Icon } from '@/components/Icon';
 import { useOnline } from '@/components/useOnline';
 import { MIN_TARGET, mood, useTheme } from '@/theme';
-import { NoteFold } from '@/components/compose/NoteFold';
-import { EIO, EO } from '@/motion/curves';
-import { creaseHaptic } from '@/motion/haptics';
+import { EO } from '@/motion/curves';
 import { dropCoordinator } from '@/motion/dropCoordinator';
 
 const MOODS = Object.keys(mood) as MoodName[];
@@ -37,15 +26,6 @@ export default function Compose() {
   const [colour, setColour] = useState<MoodName | undefined>();
   const reduced = useReduced();
   const fold = useSharedValue(0); // reduced motion only: 0 note, 1 faded
-  const foldBottom = useSharedValue(0); // letter fold: bottom third up
-  const foldTop = useSharedValue(0); // then top third down
-  const foldSlip = useSharedValue(0); // then the slip tilts and shrinks
-  const [folding, setFolding] = useState(false);
-  const [box, setBox] = useState({ w: 0, h: 0 });
-  const onCardLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    if (!folding) setBox({ w: width, h: height });
-  };
   const { colors, type, space, radius } = theme;
 
   const count = countNoteChars(text);
@@ -55,12 +35,12 @@ export default function Compose() {
 
   const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
-  // Drop-in, part 1: a letter fold. Bottom third up (180 ms), top third down over it
-  // (180 ms, starting 150 ms in), then the slip tilts and shrinks (150 ms) and we leave.
-  // Home's transition end/focus triggers the add and the fall (BUG-3, BUG-6).
+  // Drop-in, part 1: hand the note to Home and leave. The fold now plays on Home, in the Rive
+  // drop-in over the jar (DropJar, docs/decisions.md 2026-11-27). With reduced motion the note
+  // fades out here first. Home's transition end/focus triggers the add and the drop (BUG-3, BUG-6).
   const drop = () => {
     if (!canDrop || !dropCoordinator.request({ text, colour })) return;
-    if (reduced || box.h <= 0) {
+    if (reduced) {
       fold.set(
         withTiming(1, { duration: 180, easing: EO }, (finished) => {
           'worklet';
@@ -69,26 +49,13 @@ export default function Compose() {
       );
       return;
     }
-    setFolding(true);
-    setTimeout(creaseHaptic, 90);
-    setTimeout(creaseHaptic, 240);
-    foldBottom.set(withTiming(1, { duration: 180, easing: EIO }));
-    foldTop.set(withDelay(150, withTiming(1, { duration: 180, easing: EIO })));
-    foldSlip.set(
-      withDelay(
-        330,
-        withTiming(1, { duration: 150, easing: EO }, (finished) => {
-          'worklet';
-          if (finished) scheduleOnRN(finishFold);
-        }),
-      ),
-    );
+    finishFold();
   };
   const finishFold = () => {
     if (dropCoordinator.leaving()) leave();
   };
 
-  const foldStyle = useAnimatedStyle(() => (reduced ? { opacity: 1 - fold.get() } : { opacity: folding ? 0 : 1 }));
+  const foldStyle = useAnimatedStyle(() => ({ opacity: 1 - fold.get() }));
 
   const tint = colour ? mood[colour] : undefined;
 
@@ -130,7 +97,6 @@ export default function Compose() {
       >
         <View>
           <Animated.View
-            onLayout={onCardLayout}
             style={[
               foldStyle,
               styles.card,
@@ -173,21 +139,6 @@ export default function Compose() {
               <CharCounter testID="compose-counter" count={count} />
             </View>
           </Animated.View>
-          {folding && box.h > 0 && (
-            <NoteFold
-              width={box.w}
-              height={box.h}
-              text={text}
-              tint={tint}
-              paper={colors.bgSurface}
-              border={colors.borderSubtle}
-              ink={colors.textPrimary}
-              textStyle={type.noteL}
-              bottom={foldBottom}
-              top={foldTop}
-              slip={foldSlip}
-            />
-          )}
         </View>
 
         <View style={{ gap: space.s12 }}>
