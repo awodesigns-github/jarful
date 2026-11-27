@@ -1,0 +1,1845 @@
+<Rive version="1" kind="fragment">
+    <!--
+      Jarful · NoteDrop (app version)
+      Plays over the home jar: the note folds, drops through the mouth and lands exactly on the next
+      slip slot, so when the app swaps back to its own jar nothing moves.
+      Matches Figma "Flow 1 · 4 Drop in" + interaction notes 5 and 6.
+      Jar art is converted from jarful-jar/jar-layers.svg (the Figma Jar component) with `rive svg`.
+      Coordinates: the jar sits in the artboard exactly as components/jar/Jar.tsx draws it
+      (viewBox 0 8 260 320), offset by (50, 260): jar point (x, y) is artboard (x + 50, y + 252).
+      Draw order: first declared paints on top. The artboard is transparent.
+    -->
+    <Artboard defaultStateMachineId="0:7" viewModelId="0:40" viewModelInstanceId="0:41" styleId="0:3" width="360" height="580" name="NoteDrop" id="0:2">
+        <LayoutComponentStyle name="Artboard Style" id="0:3"/>
+
+        <!-- Tap anywhere to drop (preview only; in the app the view ignores touches) -->
+        <Shape x="180" y="290" name="Tap Area" id="0:5">
+            <Rectangle width="360" height="580" name="Path"/>
+            <Fill name="Fill"><SolidColor colorValue="00FFFFFF" name="Clear"/></Fill>
+        </Shape>
+
+        <Event name="noteLanded" id="0:60"/>
+        <Event name="dropFinished" id="0:61"/>
+
+        <!-- ================= JAR FRONT: lid, face, label, rim, highlight, outline ================= -->
+        <Node x="180" y="580" name="Jar Front" id="0:100">
+            <Node x="-130" y="-328" name="Jar Front Art" id="0:101">
+                <Node x="130" y="33" name="Lid Pivot" id="0:110">
+                    <Node x="-130" y="-33" name="lid" id="0:111">
+        <Shape x="176" y="33" opacity="0.35" name="path">
+            <PointsPath name="Path">
+                <StraightVertex x="0" y="-9"/>
+                <StraightVertex x="0" y="9"/>
+            </PointsPath>
+            <Stroke thickness="2.5" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+            </Stroke>
+        </Shape>
+        <Shape x="144" y="33" opacity="0.35" name="path">
+            <PointsPath name="Path">
+                <StraightVertex x="0" y="-9"/>
+                <StraightVertex x="0" y="9"/>
+            </PointsPath>
+            <Stroke thickness="2.5" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+            </Stroke>
+        </Shape>
+        <Shape x="112" y="33" opacity="0.35" name="path">
+            <PointsPath name="Path">
+                <StraightVertex x="0" y="-9"/>
+                <StraightVertex x="0" y="9"/>
+            </PointsPath>
+            <Stroke thickness="2.5" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+            </Stroke>
+        </Shape>
+        <Shape x="80" y="33" opacity="0.35" name="path">
+            <PointsPath name="Path">
+                <StraightVertex x="0" y="-9"/>
+                <StraightVertex x="0" y="9"/>
+            </PointsPath>
+            <Stroke thickness="2.5" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+            </Stroke>
+        </Shape>
+        <Shape x="130" y="33" name="rect">
+            <Rectangle originX="0.5" originY="0.5" width="160" height="38" cornerRadiusTL="10" name="Path"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FFC8755A" name="Color"/>
+            </Fill>
+            <Stroke thickness="4" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+            </Stroke>
+        </Shape>
+                    </Node>
+                </Node>
+                <!-- Face: the app sets faceOpacity = 1 (the home jar draws the Waiting face too) -->
+                <Node opacity="0" name="Faces" id="0:124">
+                    <DataBindContext sourcePathIds="0:40-0:55" propertyKey="18"/>
+    <Node opacity="0" name="face_happy" id="0:120">
+        <Node x="0" y="-5.382" name="face_happy_art">
+            <Shape x="168" y="201.882" name="ellipse">
+                <Ellipse originX="0.5" originY="0.5" width="16" height="9" name="Path"/>
+                <Fill name="Fill">
+                    <SolidColor colorValue="FFF2629B" name="Color"/>
+                </Fill>
+            </Shape>
+            <Shape x="96" y="201.882" name="ellipse">
+                <Ellipse originX="0.5" originY="0.5" width="16" height="9" name="Path"/>
+                <Fill name="Fill">
+                    <SolidColor colorValue="FFF2629B" name="Color"/>
+                </Fill>
+            </Shape>
+            <Shape x="130" y="205.132" name="path">
+                <PointsPath name="Path">
+                    <CubicDetachedVertex x="-14" y="-3.75" outRotation="0.819885" outDistance="13.6786"/>
+                    <CubicDetachedVertex x="14" y="-3.75" inRotation="2.32171" inDistance="13.6786"/>
+                </PointsPath>
+                <Stroke thickness="3.5" cap="round" join="round" name="Stroke">
+                    <SolidColor colorValue="FF2E2A26" name="Color"/>
+                </Stroke>
+            </Shape>
+            <Shape x="148" y="182.382" name="path">
+                <PointsPath name="Path">
+                    <CubicDetachedVertex x="-8" y="3" outRotation="-0.982823" outDistance="9.61461"/>
+                    <CubicDetachedVertex x="8" y="3" inRotation="-2.15877" inDistance="9.61461"/>
+                </PointsPath>
+                <Stroke thickness="3.5" cap="round" join="round" name="Stroke">
+                    <SolidColor colorValue="FF2E2A26" name="Color"/>
+                </Stroke>
+            </Shape>
+            <Shape x="108" y="182.382" name="path">
+                <PointsPath name="Path">
+                    <CubicDetachedVertex x="-8" y="3" outRotation="-0.982823" outDistance="9.61462"/>
+                    <CubicDetachedVertex x="8" y="3" inRotation="-2.15877" inDistance="9.61462"/>
+                </PointsPath>
+                <Stroke thickness="3.5" cap="round" join="round" name="Stroke">
+                    <SolidColor colorValue="FF2E2A26" name="Color"/>
+                </Stroke>
+            </Shape>
+        </Node>
+    </Node>
+    <Node name="face_waiting" id="0:121">
+        <Shape x="130" y="203.25" name="path">
+            <PointsPath name="Path">
+                <CubicDetachedVertex x="-9" y="-1.24988" outRotation="0.507055" outDistance="6.86359"/>
+                <CubicDetachedVertex x="9" y="-1.24988" inRotation="2.63454" inDistance="6.86359"/>
+            </PointsPath>
+            <Stroke thickness="3.5" cap="round" join="round" name="Stroke">
+                <SolidColor colorValue="FF2E2A26" name="Color"/>
+            </Stroke>
+        </Shape>
+        <Shape x="151" y="182" name="ellipse">
+            <Ellipse originX="0.5" originY="0.5" width="10" height="12" name="Path"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FF2E2A26" name="Color"/>
+            </Fill>
+        </Shape>
+        <Shape x="109" y="182" name="ellipse">
+            <Ellipse originX="0.5" originY="0.5" width="10" height="12" name="Path"/>
+            <Fill name="Fill">
+                <SolidColor colorValue="FF2E2A26" name="Color"/>
+            </Fill>
+        </Shape>
+    </Node>
+                </Node>
+                <!-- Label: shown only on an empty jar (labelOpacity), fades as the first note lands -->
+                <Node name="Label Fade" id="0:122">
+    <Node name="label" id="0:123">
+        <DataBindContext sourcePathIds="0:40-0:54" propertyKey="18"/>
+        <Node x="0" y="-5.382" name="label_art">
+            <Node x="8.32788" y="-3.58705" rotation="0.0523599" name="Transform">
+                <Shape x="129.906" y="195.471" name="rect">
+                    <Rectangle originX="0.5" originY="0.5" width="114.5" height="76.5" cornerRadiusTL="14.25" name="Path"/>
+                    <Fill name="Fill">
+                        <SolidColor colorValue="FFFBF6EC" name="Color"><DataBindContext sourcePathIds="0:40-0:49" propertyKey="37"/></SolidColor>
+                    </Fill>
+                    <Stroke thickness="3.5" cap="round" join="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+                    </Stroke>
+                </Shape>
+            </Node>
+        </Node>
+    </Node>
+                </Node>
+    <Node name="rim">
+        <Node x="0" y="-5.382" name="rim_art">
+            <Shape x="130" y="66.3816" name="rect">
+                <Rectangle originX="0.5" originY="0.5" width="136" height="18" cornerRadiusTL="4" name="Path"/>
+                <Fill name="Fill">
+                    <SolidColor colorValue="FFFFFFFF" name="Color"><DataBindContext sourcePathIds="0:40-0:47" propertyKey="37"/></SolidColor>
+                </Fill>
+                <Stroke thickness="4" cap="round" join="round" name="Stroke">
+                    <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+                </Stroke>
+            </Shape>
+        </Node>
+    </Node>
+    <Node name="highlight">
+        <Node x="0" y="-5.382" name="highlight_art">
+            <Shape x="46.25" y="210.382" name="path">
+                <PointsPath name="Path">
+                    <CubicDetachedVertex x="2.25" y="-55" outRotation="1.71969" outDistance="40.4475"/>
+                    <CubicDetachedVertex x="2.25" y="55" inRotation="-1.76819" inDistance="30.5941"/>
+                </PointsPath>
+                <Stroke thickness="6" cap="round" name="Stroke">
+                    <SolidColor colorValue="BFFFFFFF" name="Color"/>
+                </Stroke>
+            </Shape>
+        </Node>
+    </Node>
+    <Node name="outline">
+        <Node x="0" y="-5.382" name="outline_art">
+            <Shape x="130" y="200.382" name="path">
+                <PointsPath isClosed="true" name="Path">
+                    <CubicDetachedVertex x="-64" y="-127" outRotation="2.7707" outDistance="38.6264"/>
+                    <CubicDetachedVertex x="-110" y="-26.9998" inRotation="-1.5708" inDistance="50"/>
+                    <CubicDetachedVertex x="-108" y="77.0002" outRotation="1.51204" outDistance="34.0588"/>
+                    <CubicDetachedVertex x="-48" y="127" inRotation="3.14159" inDistance="36"/>
+                    <CubicDetachedVertex x="48" y="127" outRotation="0" outDistance="36"/>
+                    <CubicDetachedVertex x="108" y="77.0002" inRotation="1.62955" inDistance="34.0588"/>
+                    <CubicDetachedVertex x="110" y="-26.9998" outRotation="-1.5708" outDistance="50"/>
+                    <CubicDetachedVertex x="64" y="-127" inRotation="0.370891" inDistance="38.6264"/>
+                </PointsPath>
+                <Stroke thickness="5" cap="round" join="round" name="Stroke">
+                    <SolidColor colorValue="FF2E2A26" name="Color"><DataBindContext sourcePathIds="0:40-0:48" propertyKey="37"/></SolidColor>
+                </Stroke>
+            </Shape>
+        </Node>
+    </Node>
+            </Node>
+        </Node>
+
+        <!-- ================= THE NOTE ================= -->
+        <!-- Note origin = centre of the folded slip. Crease = centre of the open card (200 x 124). -->
+        <!-- Its own path is keyed; the constraint then blends it onto the landing slot the app sets -->
+        <Node x="130" y="89" opacity="0" name="Note" id="0:10">
+            <TransformConstraint targetId="0:204" strength="0" name="Land on slot" id="0:38"/>
+            <Node name="Squash" id="0:37">
+            <Node x="50" y="31" name="Crease" id="0:11">
+
+                <!-- Right column: folds over the left in fold 2 (scaleX 1 to -1) -->
+                <Node name="Right Col" id="0:12">
+                    <Shape x="50" y="-31" opacity="0" name="TR Shade" id="0:17">
+                        <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusTR="16" cornerRadiusBR="16" name="Path"/>
+                        <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="Ink"/></Fill>
+                    </Shape>
+
+                    <!-- Bottom-right flap: folds up in fold 1 (scaleY 1 to -1) -->
+                    <Node name="BR Flap" id="0:13">
+                        <Shape x="50" y="31" opacity="0" name="BR Shade" id="0:14">
+                            <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBR="16" name="Path" id="0:140"/>
+                            <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="Ink"/></Fill>
+                        </Shape>
+                        <Node opacity="0" name="BR Back" id="0:15">
+                            <Shape x="50" y="31" name="Paper Back">
+                                <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBR="16" name="Path" id="0:150"/>
+                                <Fill name="Fill"><SolidColor colorValue="FFF2629B" name="Mood"><DataBindContext sourcePathIds="0:40-0:42" propertyKey="37"/></SolidColor></Fill>
+                                <Stroke thickness="2" name="Edge"><SolidColor colorValue="FF2E2A26" name="Ink"/></Stroke>
+                            </Shape>
+                        </Node>
+                        <Node name="BR Front" id="0:16">
+                            <ClippingShape sourceId="0:28" name="Clip to quarter"/>
+                            <Shape x="50" y="31" name="BR Clip" id="0:28">
+                                <Rectangle width="100" height="62" name="Path"/>
+                            </Shape>
+                            <Text x="-84" y="-46" width="168" height="92" sizingValue="fixed" overflowValue="fitFontSize" wrapValue="wrap" name="Note Text BR" id="0:31">
+                                <TextStylePaint fontSize="15" lineHeight="20" fontAssetId="0:30" name="Note" id="0:32">
+                                    <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="text/primary"><DataBindContext sourcePathIds="0:40-0:56" propertyKey="37"/></SolidColor></Fill>
+                                </TextStylePaint>
+                                <TextValueRun styleId="0:32" text="The new intern made me laugh in standup." name="Run">
+                                    <DataBindContext sourcePathIds="0:40-0:44" propertyKey="268"/>
+                                </TextValueRun>
+                            </Text>
+                            <Shape x="50" y="31" name="Paper Front">
+                                <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBR="16" name="Path"/>
+                                <Fill name="Fill"><SolidColor colorValue="FFFDE3ED" name="Tint"><DataBindContext sourcePathIds="0:40-0:43" propertyKey="37"/></SolidColor></Fill>
+                                <Stroke thickness="2" name="Edge"><SolidColor colorValue="FFF2629B" name="Border"><DataBindContext sourcePathIds="0:40-0:57" propertyKey="37"/></SolidColor></Stroke>
+                            </Shape>
+                        </Node>
+                    </Node>
+
+                    <!-- Top-right quarter. Its back is the outside of the folded note: a Figma "Note slip" -->
+                    <Node opacity="0" name="TR Back" id="0:18">
+                        <Shape x="50" y="-31" name="Slip Line">
+                            <Rectangle width="76" height="3.4" cornerRadiusTL="1.7" name="Path"/>
+                            <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="Ink"/></Fill>
+                        </Shape>
+                        <Shape x="50" y="-31" name="Slip">
+                            <Rectangle width="100" height="62" cornerRadiusTL="16" name="Path"/>
+                            <Fill name="Fill"><SolidColor colorValue="FFF2629B" name="Mood"><DataBindContext sourcePathIds="0:40-0:42" propertyKey="37"/></SolidColor></Fill>
+                            <Stroke thickness="4.5" name="Edge"><SolidColor colorValue="FF2E2A26" name="Ink"/></Stroke>
+                        </Shape>
+                    </Node>
+                    <Node name="TR Front" id="0:19">
+                        <ClippingShape sourceId="0:27" name="Clip to quarter"/>
+                        <Shape x="50" y="-31" name="TR Clip" id="0:27">
+                            <Rectangle width="100" height="62" name="Path"/>
+                        </Shape>
+                        <Text x="-84" y="-46" width="168" height="92" sizingValue="fixed" overflowValue="fitFontSize" wrapValue="wrap" name="Note Text TR" id="0:33">
+                                <TextStylePaint fontSize="15" lineHeight="20" fontAssetId="0:30" name="Note" id="0:34">
+                                    <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="text/primary"><DataBindContext sourcePathIds="0:40-0:56" propertyKey="37"/></SolidColor></Fill>
+                                </TextStylePaint>
+                                <TextValueRun styleId="0:34" text="The new intern made me laugh in standup." name="Run">
+                                    <DataBindContext sourcePathIds="0:40-0:44" propertyKey="268"/>
+                                </TextValueRun>
+                            </Text>
+                        <Shape x="50" y="-31" name="Paper Front">
+                            <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusTR="16" name="Path"/>
+                            <Fill name="Fill"><SolidColor colorValue="FFFDE3ED" name="Tint"><DataBindContext sourcePathIds="0:40-0:43" propertyKey="37"/></SolidColor></Fill>
+                            <Stroke thickness="2" name="Edge"><SolidColor colorValue="FFF2629B" name="Border"><DataBindContext sourcePathIds="0:40-0:57" propertyKey="37"/></SolidColor></Stroke>
+                        </Shape>
+                    </Node>
+                </Node>
+
+                <!-- Left column: stays put -->
+                <Node name="Left Col" id="0:20">
+                    <Node name="BL Flap" id="0:21">
+                        <Shape x="-50" y="31" opacity="0" name="BL Shade" id="0:22">
+                            <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBL="16" name="Path" id="0:220"/>
+                            <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="Ink"/></Fill>
+                        </Shape>
+                        <Node opacity="0" name="BL Back" id="0:23">
+                            <Shape x="-50" y="31" name="Paper Back">
+                                <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBL="16" name="Path" id="0:230"/>
+                                <Fill name="Fill"><SolidColor colorValue="FFF2629B" name="Mood"><DataBindContext sourcePathIds="0:40-0:42" propertyKey="37"/></SolidColor></Fill>
+                                <Stroke thickness="2" name="Edge"><SolidColor colorValue="FF2E2A26" name="Ink"/></Stroke>
+                            </Shape>
+                        </Node>
+                        <Node name="BL Front" id="0:24">
+                            <ClippingShape sourceId="0:29" name="Clip to quarter"/>
+                            <Shape x="-50" y="31" name="BL Clip" id="0:29">
+                                <Rectangle width="100" height="62" name="Path"/>
+                            </Shape>
+                            <Text x="-84" y="-46" width="168" height="92" sizingValue="fixed" overflowValue="fitFontSize" wrapValue="wrap" name="Note Text BL" id="0:39">
+                                <TextStylePaint fontSize="15" lineHeight="20" fontAssetId="0:30" name="Note" id="0:63">
+                                    <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="text/primary"><DataBindContext sourcePathIds="0:40-0:56" propertyKey="37"/></SolidColor></Fill>
+                                </TextStylePaint>
+                                <TextValueRun styleId="0:63" text="The new intern made me laugh in standup." name="Run">
+                                    <DataBindContext sourcePathIds="0:40-0:44" propertyKey="268"/>
+                                </TextValueRun>
+                            </Text>
+                            <Shape x="-50" y="31" name="Paper Front">
+                                <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusBL="16" name="Path"/>
+                                <Fill name="Fill"><SolidColor colorValue="FFFDE3ED" name="Tint"><DataBindContext sourcePathIds="0:40-0:43" propertyKey="37"/></SolidColor></Fill>
+                                <Stroke thickness="2" name="Edge"><SolidColor colorValue="FFF2629B" name="Border"><DataBindContext sourcePathIds="0:40-0:57" propertyKey="37"/></SolidColor></Stroke>
+                            </Shape>
+                        </Node>
+                    </Node>
+                    <Node name="TL" id="0:25">
+                        <ClippingShape sourceId="0:26" name="Clip to quarter"/>
+                        <Shape x="-50" y="-31" name="TL Clip" id="0:26">
+                            <Rectangle width="100" height="62" name="Path"/>
+                        </Shape>
+                        <Text x="-84" y="-46" width="168" height="92" sizingValue="fixed" overflowValue="fitFontSize" wrapValue="wrap" name="Note Text TL" id="0:35">
+                                <TextStylePaint fontSize="15" lineHeight="20" fontAssetId="0:30" name="Note" id="0:36">
+                                    <Fill name="Fill"><SolidColor colorValue="FF2E2A26" name="text/primary"><DataBindContext sourcePathIds="0:40-0:56" propertyKey="37"/></SolidColor></Fill>
+                                </TextStylePaint>
+                                <TextValueRun styleId="0:36" text="The new intern made me laugh in standup." name="Run">
+                                    <DataBindContext sourcePathIds="0:40-0:44" propertyKey="268"/>
+                                </TextValueRun>
+                            </Text>
+                        <Shape x="-50" y="-31" name="Paper Front">
+                            <Rectangle width="100" height="62" linkCornerRadius="false" cornerRadiusTL="16" name="Path"/>
+                            <Fill name="Fill"><SolidColor colorValue="FFFDE3ED" name="Tint"><DataBindContext sourcePathIds="0:40-0:43" propertyKey="37"/></SolidColor></Fill>
+                            <Stroke thickness="2" name="Edge"><SolidColor colorValue="FFF2629B" name="Border"><DataBindContext sourcePathIds="0:40-0:57" propertyKey="37"/></SolidColor></Stroke>
+                        </Shape>
+                    </Node>
+                </Node>
+            </Node>
+            </Node>
+        </Node>
+
+
+        <!-- ================= JAR BACK: landing slot, slips (clipped to the glass), glass ================= -->
+        <Node x="180" y="580" name="Jar Back" id="0:200">
+            <Node x="-130" y="-328" name="Jar Back Art" id="0:201">
+                <!-- Where the note lands: the app sets the next slip's centre and angle (slips.ts coordinates).
+                     Scaled so the 100 x 62 folded note becomes a 44 x 30 slip. -->
+                <Node x="0" y="-5.382" name="Slot Space">
+                    <Node x="55.24" y="190.59" rotation="-0.3737" scaleX="0.44" scaleY="0.4839" name="Landing Slot" id="0:204">
+                        <DataBindContext sourcePathIds="0:40-0:51" propertyKey="13"/>
+                        <DataBindContext sourcePathIds="0:40-0:52" propertyKey="14"/>
+                        <DataBindContext sourcePathIds="0:40-0:53" propertyKey="15"/>
+                    </Node>
+                </Node>
+                <Node name="notes" id="0:202">
+                    <ClippingShape sourceId="0:203" name="Clip to glass"/>
+        <Node name="slip_36" id="0:336">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:636"/>
+            <Node x="0" y="-5.382" name="slip_36_art">
+                <Shape x="194.647" y="105.548" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.7445" y="7.0467"/>
+                        <StraightVertex x="15.7445" y="-7.0467"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-26.5007" y="77.6088" rotation="-0.420829" name="Transform">
+                    <Shape x="190.439" y="115.845" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:536" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_35" id="0:335">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:635"/>
+            <Node x="0" y="-5.382" name="slip_35_art">
+                <Shape x="149.785" y="121.012" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.2115" y="-1.1515"/>
+                        <StraightVertex x="17.2115" y="1.1515"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="7.26978" y="-8.36872" rotation="0.0668173" name="Transform">
+                    <Shape x="150.836" y="119.576" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2459D6" name="Color"><DataBindContext sourcePathIds="0:40-0:535" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_34" id="0:334">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:634"/>
+            <Node x="0" y="-5.382" name="slip_34_art">
+                <Shape x="105.655" y="119.535" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.016" y="-2.8315"/>
+                        <StraightVertex x="17.016" y="2.8315"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="17.7719" y="-12.8132" rotation="0.164894" name="Transform">
+                    <Shape x="108.416" y="116.127" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:534" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_33" id="0:333">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:633"/>
+            <Node x="0" y="-5.382" name="slip_33_art">
+                <Shape x="66.0335" y="118.355" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.0689" y="-2.493"/>
+                        <StraightVertex x="17.0689" y="2.493"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="14.987" y="-5.65689" rotation="0.145023" name="Transform">
+                    <Shape x="68.4321" y="115.333" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF2629B" name="Color"><DataBindContext sourcePathIds="0:40-0:533" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_32" id="0:332">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:632"/>
+            <Node x="0" y="-5.382" name="slip_32_art">
+                <Shape x="206.878" y="145.751" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.249" y="-0.204498"/>
+                        <StraightVertex x="17.249" y="0.204498"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="1.55809" y="-2.18208" rotation="0.011841" name="Transform">
+                    <Shape x="207.057" y="145.491" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF7C31B" name="Color"><DataBindContext sourcePathIds="0:40-0:532" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_31" id="0:331">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:631"/>
+            <Node x="0" y="-5.382" name="slip_31_art">
+                <Shape x="161.621" y="153.576" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.6755" y="-7.2"/>
+                        <StraightVertex x="15.6755" y="7.2"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="68.0771" y="-49.7926" rotation="0.430569" name="Transform">
+                    <Shape x="169.89" y="145.763" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF58A1F" name="Color"><DataBindContext sourcePathIds="0:40-0:531" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_30" id="0:330">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:630"/>
+            <Node x="0" y="-5.382" name="slip_30_art">
+                <Shape x="125.291" y="150.285" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.1005" y="-2.26949"/>
+                        <StraightVertex x="17.1005" y="2.2695"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="18.3507" y="-12.7215" rotation="0.131939" name="Transform">
+                    <Shape x="127.455" y="147.522" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF7C31B" name="Color"><DataBindContext sourcePathIds="0:40-0:530" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_29" id="0:329">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:629"/>
+            <Node x="0" y="-5.382" name="slip_29_art">
+                <Shape x="86.2312" y="146.163" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.0818" y="-2.4035"/>
+                        <StraightVertex x="17.0818" y="2.4035"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="18.519" y="-8.0202" rotation="0.139798" name="Transform">
+                    <Shape x="88.536" y="143.244" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF58A1F" name="Color"><DataBindContext sourcePathIds="0:40-0:529" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_28" id="0:328">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:628"/>
+            <Node x="0" y="-5.382" name="slip_28_art">
+                <Shape x="58.0505" y="137.983" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.139" y="6.09"/>
+                        <StraightVertex x="16.139" y="-6.09"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-44.433" y="19.8415" rotation="-0.360847" name="Transform">
+                    <Shape x="54.1714" y="146.717" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2FA35B" name="Color"><DataBindContext sourcePathIds="0:40-0:528" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_27" id="0:327">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:627"/>
+            <Node x="0" y="-5.382" name="slip_27_art">
+                <Shape x="183.919" y="182.203" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.639" y="-7.27849"/>
+                        <StraightVertex x="15.639" y="7.2785"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="83.1325" y="-56.9834" rotation="0.435613" name="Transform">
+                    <Shape x="192.303" y="174.321" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF3DB8E8" name="Color"><DataBindContext sourcePathIds="0:40-0:527" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_26" id="0:326">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:626"/>
+            <Node x="0" y="-5.382" name="slip_26_art">
+                <Shape x="140.744" y="177.976" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.3365" y="-5.54001"/>
+                        <StraightVertex x="16.3365" y="5.53999"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="56.9305" y="-31.7543" rotation="0.326932" name="Transform">
+                    <Shape x="146.727" y="171.705" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2459D6" name="Color"><DataBindContext sourcePathIds="0:40-0:526" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_25" id="0:325">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:625"/>
+            <Node x="0" y="-5.382" name="slip_25_art">
+                <Shape x="114.966" y="165.392" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.7359" y="7.06749"/>
+                        <StraightVertex x="15.7359" y="-7.0675"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-58.0565" y="50.4687" rotation="-0.422118" name="Transform">
+                    <Shape x="110.752" y="175.722" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF3DB8E8" name="Color"><DataBindContext sourcePathIds="0:40-0:525" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_24" id="0:324">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:624"/>
+            <Node x="0" y="-5.382" name="slip_24_art">
+                <Shape x="58.4913" y="179.749" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.7026" y="-7.1405"/>
+                        <StraightVertex x="15.7026" y="7.1405"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="68.9931" y="-4.41089" rotation="0.426796" name="Transform">
+                    <Shape x="66.6741" y="171.987" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2459D6" name="Color"><DataBindContext sourcePathIds="0:40-0:524" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_23" id="0:323">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:623"/>
+            <Node x="0" y="-5.382" name="slip_23_art">
+                <Shape x="205.539" y="205.801" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.755" y="-4.103"/>
+                        <StraightVertex x="16.755" y="4.10301"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="49.6281" y="-39.3162" rotation="0.240154" name="Transform">
+                    <Shape x="209.739" y="200.999" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:523" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_22" id="0:322">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:622"/>
+            <Node x="0" y="-5.382" name="slip_22_art">
+                <Shape x="164.5" y="209.882" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.5855" y="-4.741"/>
+                        <StraightVertex x="16.5855" y="4.741"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="57.7359" y="-33.2358" rotation="0.278417" name="Transform">
+                    <Shape x="169.47" y="204.413" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF2629B" name="Color"><DataBindContext sourcePathIds="0:40-0:522" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_21" id="0:321">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:621"/>
+            <Node x="0" y="-5.382" name="slip_21_art">
+                <Shape x="132.849" y="191.267" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.103" y="6.18451"/>
+                        <StraightVertex x="16.103" y="-6.18449"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-59.2705" y="50.6447" rotation="-0.366671" name="Transform">
+                    <Shape x="128.934" y="200.152" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF7C31B" name="Color"><DataBindContext sourcePathIds="0:40-0:521" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_20" id="0:320">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:620"/>
+            <Node x="0" y="-5.382" name="slip_20_art">
+                <Shape x="84.4438" y="205.783" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.9622" y="-3.1375"/>
+                        <StraightVertex x="16.9622" y="3.1375"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="35.1085" y="-8.80035" rotation="0.182888" name="Transform">
+                    <Shape x="87.539" y="202.032" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF2629B" name="Color"><DataBindContext sourcePathIds="0:40-0:520" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_19" id="0:319">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:619"/>
+            <Node x="0" y="-5.382" name="slip_19_art">
+                <Shape x="55.2379" y="190.592" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.0594" y="6.2975"/>
+                        <StraightVertex x="16.0593" y="-6.2975"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-65.3939" y="23.4354" rotation="-0.373719" name="Transform">
+                    <Shape x="51.2802" y="199.658" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF7C31B" name="Color"><DataBindContext sourcePathIds="0:40-0:519" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_18" id="0:318">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:618"/>
+            <Node x="0" y="-5.382" name="slip_18_art">
+                <Shape x="178.743" y="239.177" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.77" y="-6.99051"/>
+                        <StraightVertex x="15.77" y="6.99049"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="101.887" y="-48.1697" rotation="0.417251" name="Transform">
+                    <Shape x="186.709" y="231.548" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF58A1F" name="Color"><DataBindContext sourcePathIds="0:40-0:518" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_17" id="0:317">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:617"/>
+            <Node x="0" y="-5.382" name="slip_17_art">
+                <Shape x="147.605" y="231.53" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.248" y="-0.279999"/>
+                        <StraightVertex x="17.248" y="0.279999"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="3.52092" y="-2.01173" rotation="0.0162116" name="Transform">
+                    <Shape x="147.851" y="231.175" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2FA35B" name="Color"><DataBindContext sourcePathIds="0:40-0:517" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_16" id="0:316">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:616"/>
+            <Node x="0" y="-5.382" name="slip_16_art">
+                <Shape x="107.338" y="236.599" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.5885" y="-4.73199"/>
+                        <StraightVertex x="16.5884" y="4.73199"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="62.7591" y="-16.4791" rotation="0.277898" name="Transform">
+                    <Shape x="112.296" y="231.14" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF3DB8E8" name="Color"><DataBindContext sourcePathIds="0:40-0:516" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_15" id="0:315">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:615"/>
+            <Node x="0" y="-5.382" name="slip_15_art">
+                <Shape x="69.9445" y="223.91" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.8125" y="3.86"/>
+                        <StraightVertex x="16.8126" y="-3.86"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-46.7894" y="15.5342" rotation="-0.22568" name="Transform">
+                    <Shape x="67.1459" y="229.213" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2FA35B" name="Color"><DataBindContext sourcePathIds="0:40-0:515" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_14" id="0:314">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:614"/>
+            <Node x="0" y="-5.382" name="slip_14_art">
+                <Shape x="212.388" y="253.105" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.903" y="3.442"/>
+                        <StraightVertex x="16.903" y="-3.442"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-44.6674" y="42.3608" rotation="-0.200875" name="Transform">
+                    <Shape x="209.838" y="257.796" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF3DB8E8" name="Color"><DataBindContext sourcePathIds="0:40-0:514" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_13" id="0:313">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:613"/>
+            <Node x="0" y="-5.382" name="slip_13_art">
+                <Shape x="164.211" y="260.864" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.97" y="-3.095"/>
+                        <StraightVertex x="16.97" y="3.095"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="45.8033" y="-22.1319" rotation="0.180389" name="Transform">
+                    <Shape x="167.259" y="257.16" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2459D6" name="Color"><DataBindContext sourcePathIds="0:40-0:513" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_12" id="0:312">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:612"/>
+            <Node x="0" y="-5.382" name="slip_12_art">
+                <Shape x="123.345" y="262.68" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.343" y="-5.52048"/>
+                        <StraightVertex x="16.343" y="5.52051"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="82.9007" y="-21.6418" rotation="0.325734" name="Transform">
+                    <Shape x="129.302" y="256.429" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:512" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_11" id="0:311">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:611"/>
+            <Node x="0" y="-5.382" name="slip_11_art">
+                <Shape x="90.5204" y="259.904" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.8757" y="-3.57449"/>
+                        <StraightVertex x="16.8756" y="3.57449"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="51.4381" y="-9.71806" rotation="0.208738" name="Transform">
+                    <Shape x="94.1062" y="255.67" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF2629B" name="Color"><DataBindContext sourcePathIds="0:40-0:511" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_10" id="0:310">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:610"/>
+            <Node x="0" y="-5.382" name="slip_10_art">
+                <Shape x="53.8738" y="252.598" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.8093" y="3.87349"/>
+                        <StraightVertex x="16.8093" y="-3.87349"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-53.8122" y="12.7329" rotation="-0.226509" name="Transform">
+                    <Shape x="51.0672" y="257.922" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:510" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_09" id="0:309">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:609"/>
+            <Node x="0" y="-5.382" name="slip_09_art">
+                <Shape x="192.469" y="277.288" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.761" y="4.077"/>
+                        <StraightVertex x="16.761" y="-4.077"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-58.569" y="47.185" rotation="-0.238585" name="Transform">
+                    <Shape x="189.547" y="282.912" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF2629B" name="Color"><DataBindContext sourcePathIds="0:40-0:509" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_08" id="0:308">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:608"/>
+            <Node x="0" y="-5.382" name="slip_08_art">
+                <Shape x="152.816" y="276.585" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-15.6855" y="7.17798"/>
+                        <StraightVertex x="15.6855" y="-7.17801"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-101.752" y="77.3492" rotation="-0.429196" name="Transform">
+                    <Shape x="148.568" y="287.1" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF7C31B" name="Color"><DataBindContext sourcePathIds="0:40-0:508" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_07" id="0:307">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:607"/>
+            <Node x="0" y="-5.382" name="slip_07_art">
+                <Shape x="104.086" y="290.669" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.1086" y="-6.17102"/>
+                        <StraightVertex x="16.1086" y="6.17099"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="102.043" y="-14.0177" rotation="0.365852" name="Transform">
+                    <Shape x="110.908" y="283.791" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF58A1F" name="Color"><DataBindContext sourcePathIds="0:40-0:507" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_06" id="0:306">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:606"/>
+            <Node x="0" y="-5.382" name="slip_06_art">
+                <Shape x="70.0515" y="289.82" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-17.0489" y="-2.62653"/>
+                        <StraightVertex x="17.0489" y="2.6265"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="41.948" y="-4.53577" rotation="0.152845" name="Transform">
+                    <Shape x="72.5917" y="286.645" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2FA35B" name="Color"><DataBindContext sourcePathIds="0:40-0:506" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_05" id="0:305">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:605"/>
+            <Node x="0" y="-5.382" name="slip_05_art">
+                <Shape x="208.647" y="319.27" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.4305" y="-5.25302"/>
+                        <StraightVertex x="16.4305" y="5.25299"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="99.9644" y="-44.3804" rotation="0.309435" name="Transform">
+                    <Shape x="214.26" y="313.283" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFF58A1F" name="Color"><DataBindContext sourcePathIds="0:40-0:505" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_04" id="0:304">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:604"/>
+            <Node x="0" y="-5.382" name="slip_04_art">
+                <Shape x="173.063" y="307.309" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.388" y="5.384"/>
+                        <StraightVertex x="16.388" y="-5.384"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="-86.2456" y="61.0156" rotation="-0.317427" name="Transform">
+                    <Shape x="169.48" y="314.925" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2FA35B" name="Color"><DataBindContext sourcePathIds="0:40-0:504" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_03" id="0:303">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:603"/>
+            <Node x="0" y="-5.382" name="slip_03_art">
+                <Shape x="122.736" y="316.697" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.44" y="-5.22302"/>
+                        <StraightVertex x="16.44" y="5.22299"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="94.5324" y="-18.3066" rotation="0.307602" name="Transform">
+                    <Shape x="128.31" y="310.74" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF3DB8E8" name="Color"><DataBindContext sourcePathIds="0:40-0:503" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_02" id="0:302">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:602"/>
+            <Node x="0" y="-5.382" name="slip_02_art">
+                <Shape x="84.7482" y="322.29" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.3377" y="-5.535"/>
+                        <StraightVertex x="16.3378" y="5.535"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="100.228" y="-6.13422" rotation="0.326661" name="Transform">
+                    <Shape x="90.725" y="316.024" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FF2459D6" name="Color"><DataBindContext sourcePathIds="0:40-0:502" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="slip_01" id="0:301">
+            <DataBindContext sourcePathIds="0:40-0:46" propertyKey="18" converterId="0:601"/>
+            <Node x="0" y="-5.382" name="slip_01_art">
+                <Shape x="41.9594" y="320.249" name="path">
+                    <PointsPath name="Path">
+                        <StraightVertex x="-16.6339" y="-4.569"/>
+                        <StraightVertex x="16.6339" y="4.569"/>
+                    </PointsPath>
+                    <Stroke thickness="1.5" cap="round" name="Stroke">
+                        <SolidColor colorValue="FF2E2A26" name="Color"/>
+                    </Stroke>
+                </Shape>
+                <Node x="80.3344" y="4.16644" rotation="0.268076" name="Transform">
+                    <Shape x="46.7183" y="314.957" name="rect">
+                        <Rectangle originX="0.5" originY="0.5" width="44" height="30" cornerRadiusTL="7" name="Path"/>
+                        <Fill name="Fill">
+                            <SolidColor colorValue="FFE8432E" name="Color"><DataBindContext sourcePathIds="0:40-0:501" propertyKey="37"/></SolidColor>
+                        </Fill>
+                        <Stroke thickness="2" name="Stroke">
+                            <SolidColor colorValue="FF2E2A26" name="Color"/>
+                        </Stroke>
+                    </Shape>
+                </Node>
+            </Node>
+        </Node>
+                </Node>
+                <!-- glass interior as a paintless clip source for the slips -->
+                <Node x="0" y="-5.382" name="notes_clip">
+                    <Shape x="130" y="200.382" name="Glass Clip" id="0:203">
+                        <PointsPath isClosed="true" name="Path">
+                            <CubicDetachedVertex x="-64" y="-127" outRotation="2.7707" outDistance="38.6264"/>
+                            <CubicDetachedVertex x="-110" y="-26.9998" inRotation="-1.5708" inDistance="50"/>
+                            <CubicDetachedVertex x="-108" y="77.0002" outRotation="1.51204" outDistance="34.0588"/>
+                            <CubicDetachedVertex x="-48" y="127" inRotation="3.14159" inDistance="36"/>
+                            <CubicDetachedVertex x="48" y="127" outRotation="0" outDistance="36"/>
+                            <CubicDetachedVertex x="108" y="77.0002" inRotation="1.62955" inDistance="34.0588"/>
+                            <CubicDetachedVertex x="110" y="-26.9998" outRotation="-1.5708" outDistance="50"/>
+                            <CubicDetachedVertex x="64" y="-127" inRotation="0.370891" inDistance="38.6264"/>
+                        </PointsPath>
+                    </Shape>
+                </Node>
+    <Node name="glass">
+        <Node x="0" y="-5.382" name="glass_art">
+            <Shape x="130" y="200.382" name="path">
+                <PointsPath isClosed="true" name="Path">
+                    <CubicDetachedVertex x="-64" y="-127" outRotation="2.7707" outDistance="38.6264"/>
+                    <CubicDetachedVertex x="-110" y="-26.9998" inRotation="-1.5708" inDistance="50"/>
+                    <CubicDetachedVertex x="-108" y="77.0002" outRotation="1.51204" outDistance="34.0588"/>
+                    <CubicDetachedVertex x="-48" y="127" inRotation="3.14159" inDistance="36"/>
+                    <CubicDetachedVertex x="48" y="127" outRotation="0" outDistance="36"/>
+                    <CubicDetachedVertex x="108" y="77.0002" inRotation="1.62955" inDistance="34.0588"/>
+                    <CubicDetachedVertex x="110" y="-26.9998" outRotation="-1.5708" outDistance="50"/>
+                    <CubicDetachedVertex x="64" y="-127" inRotation="0.370891" inDistance="38.6264"/>
+                </PointsPath>
+                <Fill name="Fill">
+                    <SolidColor colorValue="FFFFFFFF" name="Color"><DataBindContext sourcePathIds="0:40-0:47" propertyKey="37"/></SolidColor>
+                </Fill>
+            </Shape>
+        </Node>
+    </Node>
+            </Node>
+        </Node>
+
+        <!-- ================= STATE MACHINE (declared before the animation) ================= -->
+        <!--
+          Ready: the open card, lid closed, face Waiting (frame 0 of Fold and Drop, held at speed 0).
+          drop trigger: Ready -> Drop (plays once, holds on the landed pose).
+          drop again, once it has finished: back to Ready.
+          The noteLanded event fires as the note lands, for the app's soft haptic.
+        -->
+        <StateMachine name="State Machine 1" id="0:7">
+            <StateMachineListenerSingle targetId="0:5" listenerTypeValue="click" name="Tap to drop" id="0:70">
+                <ListenerViewModelChange>
+                    <BindablePropertyTrigger propertyValue="1">
+                        <DataBindContext sourcePathIds="0:40-0:45" propertyKey="686" direction="true"/>
+                    </BindablePropertyTrigger>
+                </ListenerViewModelChange>
+            </StateMachineListenerSingle>
+            <StateMachineLayer name="Drop" id="0:8">
+                <AnyState x="160" y="-140"/>
+                <ExitState x="560" y="-140"/>
+                <EntryState x="0" y="0">
+                    <StateTransition stateToId="0:9"/>
+                </EntryState>
+                <!-- Ready -->
+                <AnimationState animationId="0:6" speed="0" reset="true" x="200" y="0" id="0:9">
+                    <StateTransition stateToId="0:90">
+                        <TransitionViewModelCondition>
+                            <TransitionPropertyViewModelComparator>
+                                <BindablePropertyTrigger>
+                                    <DataBindContext sourcePathIds="0:40-0:45" propertyKey="686"/>
+                                </BindablePropertyTrigger>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueTriggerComparator/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+                <!-- Drop -->
+                <AnimationState animationId="0:6" reset="true" x="420" y="120" id="0:90">
+                    <StateTransition stateToId="0:9" enableExitTime="true" exitTimeIsPercetange="true" exitTime="100">
+                        <TransitionViewModelCondition>
+                            <TransitionPropertyViewModelComparator>
+                                <BindablePropertyTrigger>
+                                    <DataBindContext sourcePathIds="0:40-0:45" propertyKey="686"/>
+                                </BindablePropertyTrigger>
+                            </TransitionPropertyViewModelComparator>
+                            <TransitionValueTriggerComparator/>
+                        </TransitionViewModelCondition>
+                    </StateTransition>
+                </AnimationState>
+            </StateMachineLayer>
+        </StateMachine>
+
+        <!--
+          Fold and Drop (60 fps, 130 frames, about 2.2 s, plays once)
+            0-15    lid lifts and tilts (250 ms, ease-out)
+            10-34   fold 1: bottom half folds up       (faces swap at 22)
+            36-60   fold 2: right half folds over left  (faces swap at 48; the outside is a Note slip)
+            62-95   soft curve into the jar (550 ms), shrinking to slip size
+            95      lands: tiny squash, face Waiting to Happy, noteLanded event, jar wobbles ±2° once
+            110-126 lid comes back down
+            138-150 face eases back from Happy to Waiting (200 ms), matching the home jar
+            154     dropFinished: the app swaps back to the home jar
+        -->
+        <LinearAnimation fps="60" duration="156" name="Fold and Drop" id="0:6">
+
+            <!-- Lid: lift and tilt, then close -->
+            <KeyedObject objectId="0:110">
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="130" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="160" frame="8" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="215" frame="15" interpolationType="hold"/>
+                    <KeyFrameDouble value="215" frame="110" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="160" frame="119" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="130" frame="126" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="33" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="6" frame="8" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="41" frame="15" interpolationType="hold"/>
+                    <KeyFrameDouble value="41" frame="110" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="6" frame="119" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="1" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="33" frame="126" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.4" frame="15" interpolationType="hold"/>
+                    <KeyFrameDouble value="0.4" frame="110" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="126" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+
+            <!-- Fold 1: both bottom flaps fold up -->
+            <KeyedObject objectId="0:13">
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="10" interpolationType="cubic"><CubicEaseInterpolator x1="0.5" y1="0" x2="0.5" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-1" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="48" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:21">
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="10" interpolationType="cubic"><CubicEaseInterpolator x1="0.5" y1="0" x2="0.5" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-1" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:16">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="22" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:24">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="22" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:15">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="22" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:23">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="22" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:14">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="10" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.3" frame="20" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.06" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:22">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="10" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.3" frame="20" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.06" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+
+            <!-- Fold 2: right half folds over the left -->
+            <KeyedObject objectId="0:12">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="36" interpolationType="cubic"><CubicEaseInterpolator x1="0.5" y1="0" x2="0.5" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-1" frame="60" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Underneath layers are hidden once a fold lands, so only the rounded top layer shows -->
+            <KeyedObject objectId="0:19">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:25">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:20">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="60" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+
+            <!-- Corner smoothing: the crease corners of each flap round off as fold 1 lands,
+                 so the folded half has four rounded corners like a slip -->
+            <KeyedObject objectId="0:150">
+                <KeyedProperty property="cornerRadiusTR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="18" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusTL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusBL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:140">
+                <KeyedProperty property="cornerRadiusTR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="18" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusTL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusBL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Left half: crease corner rounds in fold 1; its hinge corners round as fold 2 lands -->
+            <KeyedObject objectId="0:230">
+                <KeyedProperty property="cornerRadiusTL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="18" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusTR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusBR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:220">
+                <KeyedProperty property="cornerRadiusTL">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="18" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="34" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusTR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="cornerRadiusBR">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="42" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="16" frame="56" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:18">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="48" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:17">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="36" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.3" frame="46" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.04" frame="60" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+
+            <!-- The folded slip: soft curve into the jar, then a tiny squash -->
+            <!-- The folded note: its own soft path toward the mouth... -->
+            <KeyedObject objectId="0:10">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="8" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="x">
+                    <KeyFrameDouble value="130" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="130" frame="62" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="163" frame="72" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="180" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="y">
+                    <KeyFrameDouble value="89" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="89" frame="62" interpolationType="cubic"><CubicEaseInterpolator x1="0.3" y1="0" x2="0.5" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="482" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="62" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-0.1" frame="72" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.15" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="0.92" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="8" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="62" interpolationType="cubic"><CubicEaseInterpolator x1="0.25" y1="0" x2="0.4" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.5" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="0.92" frame="0" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="8" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="62" interpolationType="cubic"><CubicEaseInterpolator x1="0.25" y1="0" x2="0.4" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.5" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- ...blended onto the landing slot the app sets, so it settles exactly where its slip appears -->
+            <KeyedObject objectId="0:38">
+                <KeyedProperty property="strength">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="66" interpolationType="cubic"><CubicEaseInterpolator x1="0.45" y1="0" x2="0.55" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="95" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Tiny squash on landing -->
+            <KeyedObject objectId="0:37">
+                <KeyedProperty property="scaleX">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="95" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1.12" frame="100" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="108" interpolationType="hold"/>
+                </KeyedProperty>
+                <KeyedProperty property="scaleY">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="95" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.86" frame="100" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="108" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Face: Waiting to Happy as the note lands, held, then eased back to Waiting before the hand-off -->
+            <KeyedObject objectId="0:121">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="95" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="138" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="1" frame="150" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:120">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="95" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="138" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="150" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- An empty jar loses its label as the first note lands, like the home jar -->
+            <KeyedObject objectId="0:122">
+                <KeyedProperty property="opacity">
+                    <KeyFrameDouble value="1" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="1" frame="95" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="105" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Events for the app: haptic on landing, unmount when done -->
+            <KeyedObject objectId="0:60">
+                <KeyedProperty property="trigger">
+                    <KeyFrameCallback frame="95"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:61">
+                <KeyedProperty property="trigger">
+                    <KeyFrameCallback frame="154"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <!-- Jar wobbles ±2° once (front and back together) -->
+            <KeyedObject objectId="0:100">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="95" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.035" frame="102" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-0.035" frame="111" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="119" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+            <KeyedObject objectId="0:200">
+                <KeyedProperty property="rotation">
+                    <KeyFrameDouble value="0" frame="0" interpolationType="hold"/>
+                    <KeyFrameDouble value="0" frame="95" interpolationType="cubic"><CubicEaseInterpolator x1="0" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0.035" frame="102" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="-0.035" frame="111" interpolationType="cubic"><CubicEaseInterpolator x1="0.42" y1="0" x2="0.58" y2="1"/></KeyFrameDouble>
+                    <KeyFrameDouble value="0" frame="119" interpolationType="hold"/>
+                </KeyedProperty>
+            </KeyedObject>
+        </LinearAnimation>
+    </Artboard>
+
+    <!-- ================= DATA: what the app sets (components/jar/RiveNoteDrop.tsx) ================= -->
+    <!--
+      noteColour, noteTint, noteText   the note: mood colour (slip and card back), card tint (surface + ~18% mood), text
+      noteInk, noteBorder              card text colour and card edge (compose's text/primary and border)
+      drop                             fire to play
+      slipCount                        slips already in the jar (0-36), as Jar.tsx shows them
+      slip01..slip36                   each slip's colour, as Jar.tsx paints it
+      landX, landY, landRot            centre (slips.ts coordinates) and angle (radians) of the next slip
+      jarGlass, jarLine, labelFill     theme colours (light FFFFFF / 2E2A26 / FBF6EC, dark 2D2621 / F3EBDD / 221C18)
+      labelOpacity                     1 on an empty jar, else 0
+      faceOpacity                      1 to show the face (the app sets 1; 0 hides it)
+    -->
+    <ViewModel defaultInstanceId="0:41" name="NoteDrop" id="0:40">
+        <ViewModelPropertyColor name="noteColour" id="0:42"/>
+        <ViewModelPropertyColor name="noteTint" id="0:43"/>
+        <ViewModelPropertyString name="noteText" id="0:44"/>
+        <ViewModelPropertyTrigger name="drop" id="0:45"/>
+        <ViewModelPropertyNumber name="slipCount" id="0:46"/>
+        <ViewModelPropertyColor name="jarGlass" id="0:47"/>
+        <ViewModelPropertyColor name="jarLine" id="0:48"/>
+        <ViewModelPropertyColor name="labelFill" id="0:49"/>
+        <ViewModelPropertyNumber name="landX" id="0:51"/>
+        <ViewModelPropertyNumber name="landY" id="0:52"/>
+        <ViewModelPropertyNumber name="landRot" id="0:53"/>
+        <ViewModelPropertyNumber name="labelOpacity" id="0:54"/>
+        <ViewModelPropertyNumber name="faceOpacity" id="0:55"/>
+        <ViewModelPropertyColor name="noteInk" id="0:56"/>
+        <ViewModelPropertyColor name="noteBorder" id="0:57"/>
+        <ViewModelPropertyColor name="slip01" id="0:501"/>
+        <ViewModelPropertyColor name="slip02" id="0:502"/>
+        <ViewModelPropertyColor name="slip03" id="0:503"/>
+        <ViewModelPropertyColor name="slip04" id="0:504"/>
+        <ViewModelPropertyColor name="slip05" id="0:505"/>
+        <ViewModelPropertyColor name="slip06" id="0:506"/>
+        <ViewModelPropertyColor name="slip07" id="0:507"/>
+        <ViewModelPropertyColor name="slip08" id="0:508"/>
+        <ViewModelPropertyColor name="slip09" id="0:509"/>
+        <ViewModelPropertyColor name="slip10" id="0:510"/>
+        <ViewModelPropertyColor name="slip11" id="0:511"/>
+        <ViewModelPropertyColor name="slip12" id="0:512"/>
+        <ViewModelPropertyColor name="slip13" id="0:513"/>
+        <ViewModelPropertyColor name="slip14" id="0:514"/>
+        <ViewModelPropertyColor name="slip15" id="0:515"/>
+        <ViewModelPropertyColor name="slip16" id="0:516"/>
+        <ViewModelPropertyColor name="slip17" id="0:517"/>
+        <ViewModelPropertyColor name="slip18" id="0:518"/>
+        <ViewModelPropertyColor name="slip19" id="0:519"/>
+        <ViewModelPropertyColor name="slip20" id="0:520"/>
+        <ViewModelPropertyColor name="slip21" id="0:521"/>
+        <ViewModelPropertyColor name="slip22" id="0:522"/>
+        <ViewModelPropertyColor name="slip23" id="0:523"/>
+        <ViewModelPropertyColor name="slip24" id="0:524"/>
+        <ViewModelPropertyColor name="slip25" id="0:525"/>
+        <ViewModelPropertyColor name="slip26" id="0:526"/>
+        <ViewModelPropertyColor name="slip27" id="0:527"/>
+        <ViewModelPropertyColor name="slip28" id="0:528"/>
+        <ViewModelPropertyColor name="slip29" id="0:529"/>
+        <ViewModelPropertyColor name="slip30" id="0:530"/>
+        <ViewModelPropertyColor name="slip31" id="0:531"/>
+        <ViewModelPropertyColor name="slip32" id="0:532"/>
+        <ViewModelPropertyColor name="slip33" id="0:533"/>
+        <ViewModelPropertyColor name="slip34" id="0:534"/>
+        <ViewModelPropertyColor name="slip35" id="0:535"/>
+        <ViewModelPropertyColor name="slip36" id="0:536"/>
+        <ViewModelInstance exports="true" name="Default" id="0:41">
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:42"/>
+            <ViewModelInstanceColor propertyValue="FFFDE3ED" viewModelPropertyId="0:43"/>
+            <ViewModelInstanceString propertyValue="The new intern made me laugh in standup." viewModelPropertyId="0:44"/>
+            <ViewModelInstanceTrigger viewModelPropertyId="0:45"/>
+            <ViewModelInstanceNumber propertyValue="18" viewModelPropertyId="0:46"/>
+            <ViewModelInstanceColor propertyValue="FFFFFFFF" viewModelPropertyId="0:47"/>
+            <ViewModelInstanceColor propertyValue="FF2E2A26" viewModelPropertyId="0:48"/>
+            <ViewModelInstanceColor propertyValue="FFFBF6EC" viewModelPropertyId="0:49"/>
+            <ViewModelInstanceNumber propertyValue="55.24" viewModelPropertyId="0:51"/>
+            <ViewModelInstanceNumber propertyValue="190.59" viewModelPropertyId="0:52"/>
+            <ViewModelInstanceNumber propertyValue="-0.3737" viewModelPropertyId="0:53"/>
+            <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:54"/>
+            <ViewModelInstanceNumber propertyValue="0" viewModelPropertyId="0:55"/>
+            <ViewModelInstanceColor propertyValue="FF2E2A26" viewModelPropertyId="0:56"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:57"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:501"/>
+            <ViewModelInstanceColor propertyValue="FF2459D6" viewModelPropertyId="0:502"/>
+            <ViewModelInstanceColor propertyValue="FF3DB8E8" viewModelPropertyId="0:503"/>
+            <ViewModelInstanceColor propertyValue="FF2FA35B" viewModelPropertyId="0:504"/>
+            <ViewModelInstanceColor propertyValue="FFF58A1F" viewModelPropertyId="0:505"/>
+            <ViewModelInstanceColor propertyValue="FF2FA35B" viewModelPropertyId="0:506"/>
+            <ViewModelInstanceColor propertyValue="FFF58A1F" viewModelPropertyId="0:507"/>
+            <ViewModelInstanceColor propertyValue="FFF7C31B" viewModelPropertyId="0:508"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:509"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:510"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:511"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:512"/>
+            <ViewModelInstanceColor propertyValue="FF2459D6" viewModelPropertyId="0:513"/>
+            <ViewModelInstanceColor propertyValue="FF3DB8E8" viewModelPropertyId="0:514"/>
+            <ViewModelInstanceColor propertyValue="FF2FA35B" viewModelPropertyId="0:515"/>
+            <ViewModelInstanceColor propertyValue="FF3DB8E8" viewModelPropertyId="0:516"/>
+            <ViewModelInstanceColor propertyValue="FF2FA35B" viewModelPropertyId="0:517"/>
+            <ViewModelInstanceColor propertyValue="FFF58A1F" viewModelPropertyId="0:518"/>
+            <ViewModelInstanceColor propertyValue="FFF7C31B" viewModelPropertyId="0:519"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:520"/>
+            <ViewModelInstanceColor propertyValue="FFF7C31B" viewModelPropertyId="0:521"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:522"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:523"/>
+            <ViewModelInstanceColor propertyValue="FF2459D6" viewModelPropertyId="0:524"/>
+            <ViewModelInstanceColor propertyValue="FF3DB8E8" viewModelPropertyId="0:525"/>
+            <ViewModelInstanceColor propertyValue="FF2459D6" viewModelPropertyId="0:526"/>
+            <ViewModelInstanceColor propertyValue="FF3DB8E8" viewModelPropertyId="0:527"/>
+            <ViewModelInstanceColor propertyValue="FF2FA35B" viewModelPropertyId="0:528"/>
+            <ViewModelInstanceColor propertyValue="FFF58A1F" viewModelPropertyId="0:529"/>
+            <ViewModelInstanceColor propertyValue="FFF7C31B" viewModelPropertyId="0:530"/>
+            <ViewModelInstanceColor propertyValue="FFF58A1F" viewModelPropertyId="0:531"/>
+            <ViewModelInstanceColor propertyValue="FFF7C31B" viewModelPropertyId="0:532"/>
+            <ViewModelInstanceColor propertyValue="FFF2629B" viewModelPropertyId="0:533"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:534"/>
+            <ViewModelInstanceColor propertyValue="FF2459D6" viewModelPropertyId="0:535"/>
+            <ViewModelInstanceColor propertyValue="FFE8432E" viewModelPropertyId="0:536"/>
+        </ViewModelInstance>
+    </ViewModel>
+
+    <!-- Slip n shows when slipCount >= n -->
+    <DataConverterRangeMapper minInput="0" maxInput="1" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 1" id="0:601"/>
+    <DataConverterRangeMapper minInput="1" maxInput="2" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 2" id="0:602"/>
+    <DataConverterRangeMapper minInput="2" maxInput="3" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 3" id="0:603"/>
+    <DataConverterRangeMapper minInput="3" maxInput="4" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 4" id="0:604"/>
+    <DataConverterRangeMapper minInput="4" maxInput="5" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 5" id="0:605"/>
+    <DataConverterRangeMapper minInput="5" maxInput="6" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 6" id="0:606"/>
+    <DataConverterRangeMapper minInput="6" maxInput="7" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 7" id="0:607"/>
+    <DataConverterRangeMapper minInput="7" maxInput="8" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 8" id="0:608"/>
+    <DataConverterRangeMapper minInput="8" maxInput="9" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 9" id="0:609"/>
+    <DataConverterRangeMapper minInput="9" maxInput="10" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 10" id="0:610"/>
+    <DataConverterRangeMapper minInput="10" maxInput="11" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 11" id="0:611"/>
+    <DataConverterRangeMapper minInput="11" maxInput="12" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 12" id="0:612"/>
+    <DataConverterRangeMapper minInput="12" maxInput="13" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 13" id="0:613"/>
+    <DataConverterRangeMapper minInput="13" maxInput="14" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 14" id="0:614"/>
+    <DataConverterRangeMapper minInput="14" maxInput="15" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 15" id="0:615"/>
+    <DataConverterRangeMapper minInput="15" maxInput="16" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 16" id="0:616"/>
+    <DataConverterRangeMapper minInput="16" maxInput="17" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 17" id="0:617"/>
+    <DataConverterRangeMapper minInput="17" maxInput="18" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 18" id="0:618"/>
+    <DataConverterRangeMapper minInput="18" maxInput="19" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 19" id="0:619"/>
+    <DataConverterRangeMapper minInput="19" maxInput="20" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 20" id="0:620"/>
+    <DataConverterRangeMapper minInput="20" maxInput="21" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 21" id="0:621"/>
+    <DataConverterRangeMapper minInput="21" maxInput="22" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 22" id="0:622"/>
+    <DataConverterRangeMapper minInput="22" maxInput="23" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 23" id="0:623"/>
+    <DataConverterRangeMapper minInput="23" maxInput="24" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 24" id="0:624"/>
+    <DataConverterRangeMapper minInput="24" maxInput="25" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 25" id="0:625"/>
+    <DataConverterRangeMapper minInput="25" maxInput="26" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 26" id="0:626"/>
+    <DataConverterRangeMapper minInput="26" maxInput="27" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 27" id="0:627"/>
+    <DataConverterRangeMapper minInput="27" maxInput="28" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 28" id="0:628"/>
+    <DataConverterRangeMapper minInput="28" maxInput="29" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 29" id="0:629"/>
+    <DataConverterRangeMapper minInput="29" maxInput="30" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 30" id="0:630"/>
+    <DataConverterRangeMapper minInput="30" maxInput="31" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 31" id="0:631"/>
+    <DataConverterRangeMapper minInput="31" maxInput="32" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 32" id="0:632"/>
+    <DataConverterRangeMapper minInput="32" maxInput="33" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 33" id="0:633"/>
+    <DataConverterRangeMapper minInput="33" maxInput="34" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 34" id="0:634"/>
+    <DataConverterRangeMapper minInput="34" maxInput="35" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 35" id="0:635"/>
+    <DataConverterRangeMapper minInput="35" maxInput="36" minOutput="0" maxOutput="1" clampLower="true" clampUpper="true" name="Show slip 36" id="0:636"/>
+
+    <FontAsset file="fonts/DMSans_500Medium.ttf" name="DM Sans Medium" id="0:30"/>
+</Rive>

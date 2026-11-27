@@ -38,7 +38,7 @@ export default function Shelf() {
               onPress={() => router.push({ pathname: '/jar/[jarId]', params: { jarId: item.jarId } })}
               style={[styles.card, { backgroundColor: colors.bgSurface, borderColor: colors.borderSubtle, gap: space.s16 }]}
             >
-              <Jar width={64} fill={item.capacity > 0 ? item.noteCount / item.capacity : 0} colours={item.colours} />
+              <Jar width={64} face={false} fill={item.capacity > 0 ? item.noteCount / item.capacity : 0} colours={item.colours} />
               <View style={styles.texts}>
                 <Text style={[type.titleS, { color: colors.textPrimary }]}>{range}</Text>
                 <Text style={[type.bodyS, { color: colors.textPrimary }]}>{item.noteCount} notes</Text>
@@ -49,7 +49,7 @@ export default function Shelf() {
         ListEmptyComponent={
           jars === undefined ? undefined : (
             <View testID="shelf-empty" style={[styles.empty, { gap: space.s16 }]}>
-              <Jar width={120} fill={0} />
+              <Jar width={120} fill={0} face={false} />
               <Text accessibilityRole="header" style={[type.titleM, { color: colors.textPrimary, textAlign: 'center' }]}>
                 Your shelf is waiting
               </Text>

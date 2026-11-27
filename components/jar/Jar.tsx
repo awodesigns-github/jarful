@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
+import Svg, { ClipPath, Defs, Ellipse, G, Path, Rect } from 'react-native-svg';
 import { mood, useTheme } from '@/theme';
 import { GLASS_PATH, HIGHLIGHT_PATH, NEUTRAL_SLIP, SLIPS } from './slips';
 
@@ -8,6 +8,17 @@ const LID = '#c8755a';
 
 /** Capacity the slip layout is drawn for. Slips beyond it (a 31st note) fill the neck. */
 export const JAR_CAPACITY = 30;
+
+/** The Waiting face (jar-layers.svg `face_waiting`); the Rive drop-in returns to it before handing back. */
+function Face() {
+  return (
+    <G testID="jar-face">
+      <Ellipse cx={109} cy={182} rx={5} ry={6} fill={LINE} />
+      <Ellipse cx={151} cy={182} rx={5} ry={6} fill={LINE} />
+      <Path d="M121 202C127 205.333 133 205.333 139 202" stroke={LINE} strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" />
+    </G>
+  );
+}
 
 /** The lid, in the jar's own coordinates (viewBox 0 8 260 320). */
 function Lid() {
@@ -42,7 +53,7 @@ export function jarFillLabel(fill: number): string {
   return 'Your jar, full';
 }
 
-type Props = { fill: number; width?: number; testID?: string; colours?: (string | null)[]; lid?: boolean };
+type Props = { fill: number; width?: number; testID?: string; colours?: (string | null)[]; lid?: boolean; face?: boolean };
 
 function slipFill(c: string | null | undefined, fallback: string): string {
   return c && c in mood ? mood[c as keyof typeof mood] : fallback;
@@ -51,9 +62,10 @@ function slipFill(c: string | null | undefined, fallback: string): string {
 /**
  * The jar, drawn from jarful-jar/jar-layers.svg. `fill` is a share of capacity (0 to 1+);
  * folded slips stack from the bottom, oldest first. With `colours`, each slip takes its note's mood
- * colour (neutral when the note has none); without it, the artwork's own colours.
+ * colour (neutral when the note has none); without it, the artwork's own colours. The face sits
+ * on the front of the glass, over the slips and the empty-jar label.
  */
-export const Jar = memo(function Jar({ fill, width = 260, testID, colours, lid = true }: Props) {
+export const Jar = memo(function Jar({ fill, width = 260, testID, colours, lid = true, face = true }: Props) {
   const { theme } = useTheme();
   const { colors } = theme;
   const shown = Math.max(0, Math.min(SLIPS.length, Math.round(Math.max(0, fill) * JAR_CAPACITY)));
@@ -106,6 +118,7 @@ export const Jar = memo(function Jar({ fill, width = 260, testID, colours, lid =
         <Path d={HIGHLIGHT_PATH} stroke="#ffffff" strokeOpacity={0.75} strokeWidth={6} strokeLinecap="round" />
         <Rect x={62} y={57.3816} width={136} height={18} rx={4} fill={colors.jarGlass} stroke={colors.jarLine} strokeWidth={4} />
       </G>
+      {face && <Face />}
       {lid && <Lid />}
     </Svg>
   );
