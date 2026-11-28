@@ -45,6 +45,7 @@ describe('Rive drop-in', () => {
     mockRive.triggered = [];
     mockRive.emit = null;
     mockRive.viewReady = true;
+    mockRive.listenThrows = false;
     dropCoordinator.landed(); // a previous test may have left a drop mid-flight
     dropCoordinator.cancel();
   });
@@ -72,10 +73,10 @@ describe('Rive drop-in', () => {
   it('fires the haptic on touchdown and releases the drop only when the scene ends', async () => {
     const r = await render(ui);
     await dropIn();
-    await act(async () => mockRive.emit?.('noteLanded'));
+    await act(async () => mockRive.emit?.('landed'));
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(dropCoordinator.phase()).toBe('landing'); // a waiting seal must not start under the scene
-    await act(async () => mockRive.emit?.('dropFinished'));
+    await act(async () => mockRive.emit?.('finished'));
     expect(dropCoordinator.phase()).toBe('idle');
     expect(r.queryByTestId('rive-note-drop', { includeHiddenElements: true })).toBeNull();
   });
@@ -83,6 +84,19 @@ describe('Rive drop-in', () => {
   it('finishes on its own if the scene never reports back', async () => {
     const r = await render(ui);
     await dropIn();
+    await act(async () => {
+      jest.advanceTimersByTime(4000);
+    });
+    expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
+    expect(dropCoordinator.phase()).toBe('idle');
+    expect(r.queryByTestId('rive-note-drop', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('keeps playing and finishes on its timers if the runtime cannot listen (Android render error)', async () => {
+    mockRive.listenThrows = true;
+    const r = await render(ui);
+    await dropIn();
+    expect(mockRive.triggered).toEqual(['drop']);
     await act(async () => {
       jest.advanceTimersByTime(4000);
     });

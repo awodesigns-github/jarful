@@ -6,7 +6,6 @@ import {
   RiveView,
   useRive,
   useViewModelInstance,
-  type RiveEvent,
   type RiveFile,
 } from '@rive-app/react-native';
 import { RIVE_ARTBOARD, RIVE_DONE_MS, RIVE_LAND_MS, type LandingSlot } from './riveNoteDrop';
@@ -40,8 +39,9 @@ type Props = {
  * The drop-in moment from rive/note-drop (Figma Flow 1, 4 Drop in): the note folds, drops
  * through the mouth and lands on the next slip slot, the jar wobbles, the lid closes.
  * Drawn over the home jar at the same scale, so when it ends the caller's jar takes over and
- * nothing moves. Rive's `noteLanded` and `dropFinished` events drive the callbacks; timers
- * stand in if an event never arrives, so a drop can never get stuck.
+ * nothing moves. The scene's `landed` and `finished` view model triggers drive the callbacks
+ * (the Android runtime reports no Rive events); timers stand in if a trigger never arrives,
+ * so a drop can never get stuck.
  */
 export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, theme, onReady, onLanded, onDone, onFail }: Props) {
   const { riveViewRef, setHybridRef } = useRive();
@@ -104,10 +104,15 @@ export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, t
     }
     if (!riveViewRef || !instance || !bound || fired.current.started) return;
     fired.current.started = true;
-    riveViewRef.onEventListener((e: RiveEvent) => {
-      if (e.name === 'noteLanded') landed();
-      if (e.name === 'dropFinished') done();
-    });
+    const stops: (() => void)[] = [];
+    try {
+      const onLand = instance.triggerProperty('landed')?.addListener(landed);
+      const onEnd = instance.triggerProperty('finished')?.addListener(done);
+      if (onLand) stops.push(onLand);
+      if (onEnd) stops.push(onEnd);
+    } catch {
+      // No listener: the timers below still land and finish the drop.
+    }
     instance.triggerProperty('drop')?.trigger();
     cb.current.onReady();
     const t1 = setTimeout(landed, RIVE_LAND_MS + 400);
@@ -115,7 +120,7 @@ export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, t
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      riveViewRef.removeEventListeners();
+      stops.forEach((stop) => stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [riveViewRef, instance, bound]);
