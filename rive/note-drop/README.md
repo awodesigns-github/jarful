@@ -41,4 +41,4 @@ Rive splash screen on published files; publish from a paid workspace for the app
 | labelOpacity | number | 1 on an empty jar |
 | faceOpacity | number | 1 shows the face (the app sets 1; the home jar draws the Waiting face) |
 
-Events: `noteLanded` (frame 95: haptic) and `dropFinished` (frame 154: unmount).
+Events: `noteLanded` (frame 95: haptic) and `dropFinished` (frame 154: unmount). Each also fires a view model trigger, `landed` and `finished`, which is what the app listens to: the Android runtime reports no events.

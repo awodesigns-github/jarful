@@ -1309,12 +1309,28 @@
           drop trigger: Ready -> Drop (plays once, holds on the landed pose).
           drop again, once it has finished: back to Ready.
           The noteLanded event fires as the note lands, for the app's soft haptic.
+          Each event also fires a view model trigger (landed, finished): the Android runtime
+          reports no events, so the app listens to the triggers instead.
         -->
         <StateMachine name="State Machine 1" id="0:7">
             <StateMachineListenerSingle targetId="0:5" listenerTypeValue="click" name="Tap to drop" id="0:70">
                 <ListenerViewModelChange>
                     <BindablePropertyTrigger propertyValue="1">
                         <DataBindContext sourcePathIds="0:40-0:45" propertyKey="686" direction="true"/>
+                    </BindablePropertyTrigger>
+                </ListenerViewModelChange>
+            </StateMachineListenerSingle>
+            <StateMachineListenerSingle targetId="0:2" listenerTypeValue="event" eventId="0:60" name="Landed to view model" id="0:71">
+                <ListenerViewModelChange>
+                    <BindablePropertyTrigger propertyValue="1">
+                        <DataBindContext sourcePathIds="0:40-0:58" propertyKey="686" direction="true"/>
+                    </BindablePropertyTrigger>
+                </ListenerViewModelChange>
+            </StateMachineListenerSingle>
+            <StateMachineListenerSingle targetId="0:2" listenerTypeValue="event" eventId="0:61" name="Finished to view model" id="0:72">
+                <ListenerViewModelChange>
+                    <BindablePropertyTrigger propertyValue="1">
+                        <DataBindContext sourcePathIds="0:40-0:59" propertyKey="686" direction="true"/>
                     </BindablePropertyTrigger>
                 </ListenerViewModelChange>
             </StateMachineListenerSingle>
@@ -1701,6 +1717,8 @@
         <ViewModelPropertyColor name="noteTint" id="0:43"/>
         <ViewModelPropertyString name="noteText" id="0:44"/>
         <ViewModelPropertyTrigger name="drop" id="0:45"/>
+        <ViewModelPropertyTrigger name="landed" id="0:58"/>
+        <ViewModelPropertyTrigger name="finished" id="0:59"/>
         <ViewModelPropertyNumber name="slipCount" id="0:46"/>
         <ViewModelPropertyColor name="jarGlass" id="0:47"/>
         <ViewModelPropertyColor name="jarLine" id="0:48"/>
@@ -1753,6 +1771,8 @@
             <ViewModelInstanceColor propertyValue="FFFDE3ED" viewModelPropertyId="0:43"/>
             <ViewModelInstanceString propertyValue="The new intern made me laugh in standup." viewModelPropertyId="0:44"/>
             <ViewModelInstanceTrigger viewModelPropertyId="0:45"/>
+            <ViewModelInstanceTrigger viewModelPropertyId="0:58"/>
+            <ViewModelInstanceTrigger viewModelPropertyId="0:59"/>
             <ViewModelInstanceNumber propertyValue="18" viewModelPropertyId="0:46"/>
             <ViewModelInstanceColor propertyValue="FFFFFFFF" viewModelPropertyId="0:47"/>
             <ViewModelInstanceColor propertyValue="FF2E2A26" viewModelPropertyId="0:48"/>

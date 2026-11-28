@@ -116,16 +116,27 @@ export const mockRive: {
   triggered: string[];
   emit: ((name: string) => void) | null;
   viewReady: boolean;
-} = { file: undefined, values: {}, triggered: [], emit: null, viewReady: true };
+  listenThrows: boolean;
+} = { file: undefined, values: {}, triggered: [], emit: null, viewReady: true, listenThrows: false };
 jest.mock('@rive-app/react-native', () => {
   const React = require('react');
   const { View } = require('react-native');
   const m = () => require('./setup').mockRive;
   const prop = (name: string) => ({ set: (v: unknown) => (m().values[name] = v) });
-  const ref = {
-    onEventListener: (fn: (e: { name: string }) => void) => (m().emit = (name: string) => fn({ name })),
-    removeEventListeners: () => (m().emit = null),
-  };
+  const ref = {};
+  const listeners: Record<string, () => void> = {};
+  const trigger = (name: string) => ({
+    trigger: () => m().triggered.push(name),
+    addListener: (fn: () => void) => {
+      if (m().listenThrows) throw new Error('UnsupportedOperationException');
+      listeners[name] = fn;
+      m().emit = (n: string) => listeners[n]?.();
+      return () => {
+        delete listeners[name];
+        if (Object.keys(listeners).length === 0) m().emit = null;
+      };
+    },
+  });
   return {
     Fit: { Contain: 'contain' },
     RiveColor: { fromHexString: (h: string) => ({ toInt: () => h }) },
@@ -136,7 +147,7 @@ jest.mock('@rive-app/react-native', () => {
           colorProperty: prop,
           numberProperty: prop,
           stringProperty: prop,
-          triggerProperty: (name: string) => ({ trigger: () => m().triggered.push(name) }),
+          triggerProperty: trigger,
         }),
         [],
       );
