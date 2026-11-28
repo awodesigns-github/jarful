@@ -115,7 +115,7 @@ describe('Rive drop-in', () => {
     dropCoordinator.request({ text: 'Sunny walk', colour: 'pink' });
     dropCoordinator.leaving();
     await act(async () => listeners.transitionEnd({ data: { closing: false } }));
-    const homeJar = () => r.getByTestId('home-jar', { includeHiddenElements: true });
+    const homeJar = () => r.getByTestId('drop-jar-art', { includeHiddenElements: true });
     expect(mockRive.triggered).toEqual([]);
     expect(homeJar()).toHaveStyle({ opacity: 1 });
     await act(async () => {
