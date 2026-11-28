@@ -8,7 +8,14 @@ import {
   useViewModelInstance,
   type RiveFile,
 } from '@rive-app/react-native';
-import { RIVE_ARTBOARD, RIVE_DONE_MS, RIVE_LAND_MS, type LandingSlot } from './riveNoteDrop';
+import {
+  RIVE_ARTBOARD,
+  RIVE_DONE_MS,
+  RIVE_LAND_MS,
+  RIVE_READY_GIVE_UP_MS,
+  RIVE_SETTLE_MS,
+  type LandingSlot,
+} from './riveNoteDrop';
 
 /** Rive's view model takes colours as ARGB integers. */
 const argb = (hex: string) => RiveColor.fromHexString(hex).toInt();
@@ -96,7 +103,8 @@ export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instance, error]);
 
-  // Once the view is ready: listen, play, and arm the fallback timers.
+  // Once the view is ready: listen, then (once its first frame is on screen) hide the caller's
+  // jar, play, and arm the fallback timers.
   useEffect(() => {
     if (riveViewRef === null) {
       cb.current.onFail();
@@ -113,13 +121,27 @@ export function RiveNoteDrop({ file, width, note, slots, landing, slipColours, t
     } catch {
       // No listener: the timers below still land and finish the drop.
     }
-    instance.triggerProperty('drop')?.trigger();
-    cb.current.onReady();
-    const t1 = setTimeout(landed, RIVE_LAND_MS + 400);
-    const t2 = setTimeout(done, RIVE_DONE_MS + 600);
+    // The scene rests on the same jar, lid closed, so both can show for a moment. Android puts
+    // the first frame on screen a frame or two after `awaitViewReady`, so wait a little more,
+    // or the jar flashes blank at the hand-off. If the view never reports, start anyway.
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    let live = true;
+    let playing = false;
+    const play = () => {
+      if (!live || playing) return;
+      playing = true;
+      cb.current.onReady();
+      instance.triggerProperty('drop')?.trigger();
+      timers.push(setTimeout(landed, RIVE_LAND_MS + 400), setTimeout(done, RIVE_DONE_MS + 600));
+    };
+    riveViewRef
+      .awaitViewReady()
+      .catch(() => true)
+      .then(() => live && timers.push(setTimeout(play, RIVE_SETTLE_MS)));
+    timers.push(setTimeout(play, RIVE_READY_GIVE_UP_MS));
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
+      live = false;
+      timers.forEach(clearTimeout);
       stops.forEach((stop) => stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

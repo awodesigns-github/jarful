@@ -66,3 +66,8 @@ export function slipColours(colours: (string | null)[] | undefined, mood: Record
 /** The Rive timeline: the note lands at frame 95 and the scene ends at frame 154 (60 fps). */
 export const RIVE_LAND_MS = 1583;
 export const RIVE_DONE_MS = 2567;
+
+/** After the view's first frame, how long to wait before hiding the home jar and playing. */
+export const RIVE_SETTLE_MS = 100;
+/** Play anyway if the view never reports its first frame. */
+export const RIVE_READY_GIVE_UP_MS = 1000;
