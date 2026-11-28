@@ -123,7 +123,7 @@ jest.mock('@rive-app/react-native', () => {
   const { View } = require('react-native');
   const m = () => require('./setup').mockRive;
   const prop = (name: string) => ({ set: (v: unknown) => (m().values[name] = v) });
-  const ref = {};
+  const ref = { awaitViewReady: () => Promise.resolve(true) };
   const listeners: Record<string, () => void> = {};
   const trigger = (name: string) => ({
     trigger: () => m().triggered.push(name),

@@ -252,7 +252,7 @@ export function DropJar({ total, capacity = JAR_CAPACITY, width = 260, colours }
   return (
     <View style={{ width, height }}>
       {/* Hidden (not unmounted) while the Rive scene covers it. */}
-      <View style={{ opacity: riveShowing ? 0 : 1 }}>
+      <View testID="drop-jar-art" style={{ opacity: riveShowing ? 0 : 1 }}>
       <Animated.View style={[{ width, height, transformOrigin: 'bottom' }, jarStyle]}>
         <Jar fill={fill} width={width} colours={colours} />
         <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, glowStyle]}>

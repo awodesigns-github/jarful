@@ -6,6 +6,7 @@ import { act, render } from '@testing-library/react-native';
 import { dropCoordinator } from '@/motion/dropCoordinator';
 import { DropJar } from '@/components/jar/DropJar';
 import { mood, ThemeProvider } from '@/theme';
+import { RIVE_SETTLE_MS } from '@/components/jar/riveNoteDrop';
 import { mockAdd, mockRive } from './setup';
 
 const listeners: Record<string, (e?: unknown) => void> = {};
@@ -33,6 +34,9 @@ async function dropIn() {
   dropCoordinator.request({ text: 'Sunny walk', colour: 'pink' });
   dropCoordinator.leaving();
   await act(async () => listeners.transitionEnd({ data: { closing: false } }));
+  await act(async () => {
+    jest.advanceTimersByTime(RIVE_SETTLE_MS); // the scene's first frame settles on screen
+  });
 }
 
 describe('Rive drop-in', () => {
@@ -103,6 +107,22 @@ describe('Rive drop-in', () => {
     expect(Haptics.impactAsync).toHaveBeenCalledTimes(1);
     expect(dropCoordinator.phase()).toBe('idle');
     expect(r.queryByTestId('rive-note-drop', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('keeps the home jar showing until the scene has drawn, then plays', async () => {
+    const r = await render(ui);
+    dropCoordinator.cancel();
+    dropCoordinator.request({ text: 'Sunny walk', colour: 'pink' });
+    dropCoordinator.leaving();
+    await act(async () => listeners.transitionEnd({ data: { closing: false } }));
+    const homeJar = () => r.getByTestId('drop-jar-art', { includeHiddenElements: true });
+    expect(mockRive.triggered).toEqual([]);
+    expect(homeJar()).toHaveStyle({ opacity: 1 });
+    await act(async () => {
+      jest.advanceTimersByTime(RIVE_SETTLE_MS);
+    });
+    expect(mockRive.triggered).toEqual(['drop']);
+    expect(homeJar()).toHaveStyle({ opacity: 0 });
   });
 
   it('falls back to the Reanimated drop when the scene cannot start', async () => {
